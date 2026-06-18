@@ -6,21 +6,22 @@ import { WarningService } from '../../services/warningService.js';
 import { ModerationService } from '../../services/moderationService.js';
 import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("warn")
-        .setDescription("Warn a user")
+        .setDescription("מתן אזהרה למשתמש")
         .addUserOption((o) =>
             o
                 .setName("target")
                 .setRequired(true)
-                .setDescription("User to warn"),
+                .setDescription("המשתמש שברצונך להזהיר"),
         )
         .addStringOption((o) =>
             o
                 .setName("reason")
                 .setRequired(true)
-                .setDescription("Reason for the warning"),
+                .setDescription("סיבת האזהרה"),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
     category: "moderation",
@@ -37,91 +38,91 @@ export default {
         }
 
         try {
-                if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
-                    throw new Error("You need the `Moderate Members` permission to issue warnings.");
-                }
+            if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+                throw new Error("דרושה הרשאת `ניהול חברים` (Moderate Members) כדי לתת אזהרות.");
+            }
 
-                const target = interaction.options.getUser("target");
-                const member = interaction.options.getMember("target");
-                const reason = interaction.options.getString("reason");
-                const moderator = interaction.user;
-                const guildId = interaction.guildId;
+            const target = interaction.options.getUser("target");
+            const member = interaction.options.getMember("target");
+            const reason = interaction.options.getString("reason");
+            const moderator = interaction.user;
+            const guildId = interaction.guildId;
 
-                if (!target) {
-                    throw new TitanBotError(
-                        'Missing target user',
-                        ErrorTypes.USER_INPUT,
-                        'You must specify a user to warn.',
-                        { subtype: 'invalid_user' },
-                    );
-                }
+            if (!target) {
+                throw new TitanBotError(
+                    'Missing target user',
+                    ErrorTypes.USER_INPUT,
+                    'עליך לציין משתמש כדי להזהיר.',
+                    { subtype: 'invalid_user' },
+                );
+            }
 
-                if (!reason) {
-                    throw new TitanBotError(
-                        'Missing warning reason',
-                        ErrorTypes.VALIDATION,
-                        'You must provide a reason for the warning.',
-                        { subtype: 'missing_required' },
-                    );
-                }
+            if (!reason) {
+                throw new TitanBotError(
+                    'Missing warning reason',
+                    ErrorTypes.VALIDATION,
+                    'עליך לספק סיבה עבור האזהרה.',
+                    { subtype: 'missing_required' },
+                );
+            }
 
-                if (!member) {
-                    throw new TitanBotError(
-                        "Target not found",
-                        ErrorTypes.USER_INPUT,
-                        "The target user is not currently in this server."
-                    );
-                }
+            if (!member) {
+                throw new TitanBotError(
+                    "Target not found",
+                    ErrorTypes.USER_INPUT,
+                    "המשתמש שצוין אינו נמצא בשרת כרגע."
+                );
+            }
 
-                const hierarchyCheck = ModerationService.validateHierarchy(interaction.member, member, 'warn');
-                if (!hierarchyCheck.valid) {
-                    throw new TitanBotError(
-                        hierarchyCheck.error,
-                        ErrorTypes.PERMISSION,
-                        hierarchyCheck.error
-                    );
-                }
+            const hierarchyCheck = ModerationService.validateHierarchy(interaction.member, member, 'warn');
+            if (!hierarchyCheck.valid) {
+                throw new TitanBotError(
+                    hierarchyCheck.error,
+                    ErrorTypes.PERMISSION,
+                    hierarchyCheck.error
+                );
+            }
 
-                const result = await WarningService.addWarning({
-                    guildId,
-                    userId: target.id,
-                    moderatorId: moderator.id,
+            const result = await WarningService.addWarning({
+                guildId,
+                userId: target.id,
+                moderatorId: moderator.id,
+                reason,
+                timestamp: Date.now()
+            });
+
+            if (!result.success) {
+                throw new Error("נכשל הניסיון לשמור את האזהרה במסד הנתונים");
+            }
+
+            const totalWarns = result.totalCount;
+
+            await logModerationAction({
+                client,
+                guild: interaction.guild,
+                event: {
+                    action: "User Warned",
+                    target: `${target.tag} (${target.id})`,
+                    executor: `${moderator.tag} (${moderator.id})`,
                     reason,
-                    timestamp: Date.now()
-                });
-
-                if (!result.success) {
-                    throw new Error("Failed to store warning in database");
-                }
-
-                const totalWarns = result.totalCount;
-
-                await logModerationAction({
-                    client,
-                    guild: interaction.guild,
-                    event: {
-                        action: "User Warned",
-                        target: `${target.tag} (${target.id})`,
-                        executor: `${moderator.tag} (${moderator.id})`,
-                        reason,
-                        metadata: {
-                            userId: target.id,
-                            moderatorId: moderator.id,
-                            totalWarns,
-                            warningNumber: totalWarns,
-                            warningId: result.id
-                        }
+                    metadata: {
+                        userId: target.id,
+                        moderatorId: moderator.id,
+                        totalWarns,
+                        warningNumber: totalWarns,
+                        warningId: result.id
                     }
-                });
+                }
+            });
 
-                await InteractionHelper.safeEditReply(interaction, {
-                    embeds: [
-                        successEmbed(
-                            `⚠️ **Warned** ${target.tag}`,
-                            `**Reason:** ${reason}\n**Total Warns:** ${totalWarns}`,
-                        ),
-                    ],
-                });
+            await InteractionHelper.safeEditReply(interaction, {
+                embeds: [
+                    successEmbed(
+                        `⚠️ **ניתנה אזהרה** ל-${target.tag}`,
+                        `**סיבה:** ${reason}\n**סך אזהרות:** ${totalWarns}`,
+                    ),
+                ],
+            });
         } catch (error) {
             logger.error('Warn command error:', error);
             await handleInteractionError(interaction, error, { subtype: 'warn_failed' });
