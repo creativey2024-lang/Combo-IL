@@ -10,7 +10,7 @@ export const botConfig = {
     activities: [
       {
         // סטטוס מעוצב וצבעוני שמראה מי היצרן
-        name: "✨ נוצר ע״י שאמטיקינג הנתרן 👑 | Combo IL bot",
+        name: "✨ נוצר ע״י שאמטיקינג  👑 | Combo IL bot",
         type: 0,
       },
     ],
