@@ -8,28 +8,28 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('goodbye')
-        .setDescription('Configure the goodbye message system')
+        .setDescription('הגדרת מערכת הודעות הפרידה/עזיבה בשרת')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setup')
-                .setDescription('Set up the goodbye message')
+                .setDescription('הגדרת הודעת עזיבה חדשה')
                 .addChannelOption(option =>
                     option.setName('channel')
-                        .setDescription('The channel to send goodbye messages to')
+                        .setDescription('הערוץ אליו יישלחו הודעות העזיבה')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('message')
-                        .setDescription('Goodbye message. Variables: {user}, {username}, {server}, {memberCount}')
+                        .setDescription('הודעת העזיבה. משתנים זמינים: {user}, {username}, {server}, {memberCount}')
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('image')
-                        .setDescription('URL of the image to include in the goodbye message')
+                        .setDescription('קישור (URL) לתמונה שברצונכם לצרף להודעה')
                         .setRequired(false))
                 .addBooleanOption(option =>
                     option.setName('ping')
-                        .setDescription('Whether to ping the user in the goodbye message')
+                        .setDescription('האם לתייג (Ping) את המשתמש שעזב בהודעה')
                         .setRequired(false))),
 
     async execute(interaction) {
@@ -46,7 +46,7 @@ export default {
         const { options, guild, client } = interaction;
 
         if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the **Manage Server** permission to use `/goodbye`.' });
+            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בפקודה `/goodbye`.' });
         }
 
         const subcommand = options.getSubcommand();
@@ -60,12 +60,12 @@ export default {
             const existingConfig = await getWelcomeConfig(client, guild.id);
             if (existingConfig?.goodbyeChannelId) {
                 logger.info(`[Goodbye] Setup blocked because config already exists in channel ${existingConfig.goodbyeChannelId} for guild ${guild.id}`);
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Goodbye is already configured for <#${existingConfig.goodbyeChannelId}>. Use **/goodbye config** to customize channel, message, ping, or image.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `מערכת הודעות העזיבה כבר מוגדרת בערוץ <#${existingConfig.goodbyeChannelId}>. השתמשו בפקודה **/goodbye config** כדי לערוך את ההגדרות.` });
             }
 
             if (!message || message.trim().length === 0) {
                 logger.warn(`[Goodbye] Empty message provided by ${interaction.user.tag} in ${guild.name}`);
-                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Goodbye message cannot be empty' });
+                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'הודעת העזיבה אינה יכולה להיות ריקה.' });
             }
 
             if (image) {
@@ -73,7 +73,7 @@ export default {
                     new URL(image);
                 } catch (e) {
                     logger.warn(`[Goodbye] Invalid image URL provided by ${interaction.user.tag}: ${image}`);
-                    return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Please provide a valid image URL (must start with http:// or https://' });
+                    return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'אנא ספקו קישור תקין לתמונה (חייב להתחיל ב-http:// או https://)' });
                 }
             }
 
@@ -84,10 +84,10 @@ export default {
                     leaveMessage: message,
                     goodbyePing: ping,
                     leaveEmbed: {
-                        title: "Goodbye {user.tag}",
+                        title: "להתראות {user.tag}",
                         description: message,
                         color: getColor('error'),
-                        footer: `Goodbye from ${guild.name}!`,
+                        footer: `נתגעגע אליך בשרת ${guild.name}!`,
                         ...(image && { image: { url: image } })
                     }
                 });
@@ -101,14 +101,14 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(getColor('success'))
-                    .setTitle('Goodbye System Configured')
-                    .setDescription(`Goodbye messages will now be sent to ${channel}`)
+                    .setTitle('מערכת הודעות העזיבה הוגדרה בהצלחה')
+                    .setDescription(`הודעות פרידה יישלחו מעתה לערוץ ${channel}`)
                     .addFields(
-                        { name: 'Message Preview', value: previewMessage },
-                        { name: 'Ping User', value: ping ? 'Yes' : 'No' },
-                        { name: 'Status', value: 'Enabled' }
+                        { name: 'תצוגה מקדימה של ההודעה', value: previewMessage },
+                        { name: 'תיוג משתמש', value: ping ? 'כן' : 'לא' },
+                        { name: 'סטטוס', value: 'מופעל' }
                     )
-                    .setFooter({ text: 'Tip: Use /goodbye config to customize goodbye settings' });
+                    .setFooter({ text: 'טיפ: ניתן להשתמש בפקודה /goodbye config כדי להתאים אישית את ההגדרות' });
 
                 if (image) {
                     embed.setImage(image);
@@ -117,7 +117,7 @@ export default {
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             } catch (error) {
                 logger.error(`[Goodbye] Failed to setup goodbye system for guild ${guild.id}:`, error);
-                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while configuring the goodbye system. Please try again.' });
+                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'התרחשה שגיאה בעת הגדרת מערכת העזיבה. אנא נסו שוב.' });
             }
         }
     },
