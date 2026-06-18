@@ -8,17 +8,17 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("shorten")
-        .setDescription("Shorten a URL using is.gd")
+        .setDescription("קיצור קישורים (URL) באמצעות השירות is.gd")
         .addStringOption(option =>
             option
                 .setName("url")
-                .setDescription("The URL to shorten")
+                .setDescription("הקישור שברצונך לקצר")
                 .setRequired(true)
         )
         .addStringOption(option =>
             option
                 .setName("custom")
-                .setDescription("Custom URL ending (optional)")
+                .setDescription("סיומת מותאמת אישית לקישור (אופציונלי)")
                 .setRequired(false)
         )
         .setDMPermission(false),
@@ -46,14 +46,14 @@ export default {
             } catch (e) {
                 return replyUserError(interaction, {
                     type: ErrorTypes.VALIDATION,
-                    message: 'Invalid URL format. Include http:// or https://',
+                    message: 'פורמט הקישור אינו תקין. יש לכלול http:// או https://',
                 });
             }
 
             if (custom && !/^[a-zA-Z0-9_-]+$/.test(custom)) {
                 return replyUserError(interaction, {
                     type: ErrorTypes.VALIDATION,
-                    message: 'Custom URL can only contain letters, numbers, underscores, and hyphens.',
+                    message: 'הסיומת המותאמת אישית יכולה להכיל אותיות באנגלית, מספרים, קו תחתון ומקפים בלבד.',
                 });
             }
 
@@ -70,13 +70,13 @@ export default {
                 response = await fetch(apiUrl, {
                     signal: controller.signal,
                     headers: {
-                        'User-Agent': 'TitanBot URL Shortener/1.0'
+                        'User-Agent': 'ComboIL Bot URL Shortener/1.0'
                     }
                 });
             } catch (networkError) {
                 const message = networkError?.name === 'AbortError'
-                    ? 'The URL shortener timed out. Please try again in a moment.'
-                    : 'Unable to reach the URL shortener service right now. Please try again later.';
+                    ? 'בקשת קיצור הקישור חרגה מזמן ההמתנה המקסימלי. אנא נסו שוב בעוד רגע.'
+                    : 'לא ניתן לגשת לשירות קיצור הקישורים כרגע. אנא נסו שוב מאוחר יותר.';
                 return replyUserError(interaction, {
                     type: ErrorTypes.NETWORK,
                     message,
@@ -88,7 +88,7 @@ export default {
             if (!response.ok) {
                 return replyUserError(interaction, {
                     type: ErrorTypes.UNKNOWN,
-                    message: `Shortener service returned HTTP ${response.status}. Please try again later.`,
+                    message: `שירות קיצור הקישורים החזיר שגיאה HTTP ${response.status}. אנא נסו שוב מאוחר יותר.`,
                 });
             }
 
@@ -100,22 +100,24 @@ export default {
                 if (shortUrl.includes("already exists")) {
                     return replyUserError(interaction, {
                         type: ErrorTypes.VALIDATION,
-                        message: 'That custom URL is already taken. Try a different one.',
+                        message: 'הסיומת המותאמת אישית הזו כבר תפוסה. נסו לבחור סיומת אחרת.',
                     });
                 } else if (shortUrl.includes("invalid")) {
                     return replyUserError(interaction, {
                         type: ErrorTypes.VALIDATION,
-                        message: 'Invalid URL. Include http:// or https://',
+                        message: 'הקישור שסיפקת אינו תקין. יש לכלול http:// או https://',
                     });
                 }
                 return replyUserError(interaction, {
                     type: ErrorTypes.UNKNOWN,
-                    message: `URL shortening failed: ${shortUrl}`,
+                    message: `קיצור הקישור נכשל: ${shortUrl}`,
                 });
             }
 
-            const embed = successEmbed('URL Shortened', `Here's your shortened URL: ${shortUrl}`);
+            const embed = successEmbed('🔗 הקישור קוצר בהצלחה', `הנה הקישור המקוצר שלך: ${shortUrl}`);
             embed.setColor(getColor('success'));
+            embed.setFooter({ text: 'Combo IL • אמטיקינג יצר את זה' });
+
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [embed],
             });
