@@ -17,55 +17,55 @@ import {
 export default {
     data: new SlashCommandBuilder()
         .setName("jointocreate")
-        .setDescription("Manage Join to Create voice channels system.")
+        .setDescription("ניהול מערכת חדרים זמניים (Join to Create).")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false)
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("setup")
-                .setDescription("Set up a new Join to Create voice channel.")
+                .setDescription("הגדרת ערוץ מאסטר חדש ליצירת חדרים זמניים.")
                 .addChannelOption((option) =>
                     option
                         .setName("category")
-                        .setDescription("Category to create the channel in.")
+                        .setDescription("הקטגוריה שבה ייווצר ערוץ המאסטר והחדרים הזמניים.")
                         .addChannelTypes(ChannelType.GuildCategory)
                 )
                 .addStringOption((option) =>
                     option
                         .setName("channel_name")
-                        .setDescription("Select a template for naming temporary voice channels.")
+                        .setDescription("בחר תבנית קבועה לשמות של החדרים הזמניים שייפתחו.")
                         .addChoices(
-                            { name: "{username}'s Room (Default)", value: "{username}'s Room" },
-                            { name: "{username}'s Channel", value: "{username}'s Channel" },
-                            { name: "{username}'s Lounge", value: "{username}'s Lounge" },
-                            { name: "{username}'s Space", value: "{username}'s Space" },
-                            { name: "{displayName}'s Room", value: "{displayName}'s Room" },
-                            { name: "{username}'s VC", value: "{username}'s VC" },
-                            { name: "{username}'s Music Room", value: "{username}'s Music Room" },
-                            { name: "{username}'s Gaming Room", value: "{username}'s Gaming Room" },
-                            { name: "{username}'s Chat Room", value: "{username}'s Chat Room" },
-                            { name: "{username}'s Private Room", value: "{username}'s Private Room" }
+                            { name: "החדר של {username} (ברירת מחדל)", value: "{username}'s Room" },
+                            { name: "הערוץ של {username}", value: "{username}'s Channel" },
+                            { name: "הלונג' של {username}", value: "{username}'s Lounge" },
+                            { name: "הספייס של {username}", value: "{username}'s Space" },
+                            { name: "החדר של {displayName}", value: "{displayName}'s Room" },
+                            { name: "ה-VC של {username}", value: "{username}'s VC" },
+                            { name: "חדר המוזיקה של {username}", value: "{username}'s Music Room" },
+                            { name: "חדר הגיימינג של {username}", value: "{username}'s Gaming Room" },
+                            { name: "חדר הדיבורים של {username}", value: "{username}'s Chat Room" },
+                            { name: "החדר הפרטי של {username}", value: "{username}'s Private Room" }
                         )
                 )
                 .addIntegerOption((option) =>
                     option
                         .setName("user_limit")
-                        .setDescription("Maximum number of users in temporary channels. (0 = unlimited)")
+                        .setDescription("מגבלת משתמשים מקסימלית בחדרים הזמניים (0 = ללא הגבלה).")
                 )
                 .addIntegerOption((option) =>
                     option
                         .setName("bitrate")
-                        .setDescription("Bitrate for temporary channels in kbps (8-96).")
+                        .setDescription("איכות השמע (Bitrate) בקצב kbps עבור החדרים (8-96).")
                 )
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("dashboard")
-                .setDescription("Configure an existing Join to Create system.")
+                .setDescription("לוח בקרה לניהול ושינוי מערכת חדרים זמניים קיימת.")
                 .addChannelOption((option) =>
                     option
                         .setName("trigger_channel")
-                        .setDescription("The Join to Create trigger channel to configure.")
+                        .setDescription("ערוץ המאסטר (Join to Create) שברצונך לערוך.")
                         .setRequired(true)
                         .addChannelTypes(ChannelType.GuildVoice)
                 )
@@ -79,14 +79,12 @@ export default {
                 throw new TitanBotError(
                     'User lacks ManageGuild permission',
                     ErrorTypes.PERMISSION,
-                    'You need **Manage Server** permission to use this command.'
+                    'אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בפקודה זו.'
                 );
             }
 
             const subcommand = interaction.options.getSubcommand();
             await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
-
-            let responseEmbed;
 
             if (subcommand === "setup") {
                 await handleSetupSubcommand(interaction, client);
@@ -98,14 +96,14 @@ export default {
 
         } catch (error) {
             try {
-                let errorMessage = 'An error occurred while executing this command.';
+                let errorMessage = 'אירעה שגיאה בעת ביצוע הפקודה.';
                 
                 if (error instanceof TitanBotError) {
-                    errorMessage = error.userMessage || 'An error occurred. Please try again.';
+                    errorMessage = error.userMessage || 'אירעה שגיאה. אנא נסה שנית.';
                     logger.debug(`TitanBotError [${error.type}]: ${error.message}`, error.context || {});
                 } else {
                     logger.error('Unexpected error in jointocreate command:', error);
-                    errorMessage = 'An unexpected error occurred. Please try again or contact support.';
+                    errorMessage = 'אירעה שגיאה בלתי צפויה. אנא נסה שנית או פנה לתמיכה.';
                 }
 
                 return replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: errorMessage });
@@ -150,7 +148,7 @@ async function handleSetupSubcommand(interaction, client) {
 
             if (activeTriggerChannels.length > 0) {
                 const primaryTrigger = activeTriggerChannels[0];
-                const errorMessage = `This server already has a Join to Create channel set up: ${primaryTrigger}\n\nUse \`/jointocreate dashboard\` to modify it, or remove it first before creating a new one.`;
+                const errorMessage = `בשרת זה כבר מוגדר ערוץ חדרים זמניים פעיל: ${primaryTrigger}\n\nניתן להשתמש בפקודה \`/jointocreate dashboard\` כדי לערוך אותו, או למחוק אותו לפני יצירת ערוץ חדש.`;
 
                 throw new TitanBotError(
                     'Guild already has a Join to Create channel',
@@ -168,7 +166,7 @@ async function handleSetupSubcommand(interaction, client) {
 
         logger.debug('Creating Join to Create trigger channel...');
         let triggerChannel = await interaction.guild.channels.create({
-            name: 'Join to Create',
+            name: '➕ יצירת חדר זמני',
             type: ChannelType.GuildVoice,
             parent: category?.id,
             userLimit: 0,
@@ -200,13 +198,13 @@ async function handleSetupSubcommand(interaction, client) {
         logger.info(`Successfully created Join to Create system in guild ${guildId}`);
 
         const responseEmbed = successEmbed(
-            '✅ Setup Complete',
-            `Created Join to Create channel: ${triggerChannel}\n\n` +
-            `**Settings:**\n` +
-            `• Template: \`${nameTemplate}\`\n` +
-            `• User Limit: ${userLimit === 0 ? 'Unlimited' : userLimit + ' users'}\n` +
-            `• Bitrate: ${bitrate} kbps\n` +
-            `${category ?`• Category: ${category.name}`: '• Category: Root level'}`
+            '✅ ההגדרה הושלמה בהצלחה',
+            `ערוץ המאסטר נוצר בהצלחה: ${triggerChannel}\n\n` +
+            `**הגדרות נוכחיות:**\n` +
+            `• תבנית שם: \`${nameTemplate}\`\n` +
+            `• מגבלת משתמשים: ${userLimit === 0 ? 'ללא הגבלה' : userLimit + ' משתמשים'}\n` +
+            `• איכות שמע (Bitrate): ${bitrate} kbps\n` +
+            `${category ? `• קטגוריה: ${category.name}` : '• קטגוריה: ללא (Root level)'}`
         );
 
         return await InteractionHelper.safeEditReply(interaction, { embeds: [responseEmbed] });
@@ -219,7 +217,7 @@ async function handleSetupSubcommand(interaction, client) {
         throw new TitanBotError(
             `Setup failed: ${error.message}`,
             ErrorTypes.DISCORD_API,
-            'Failed to set up Join to Create system. Please check bot permissions.'
+            'הגדרת המערכת נכשלה. אנא ודא כי לבוט יש את ההרשאות המתאימות בשרת.'
         );
     }
 }
@@ -233,47 +231,47 @@ async function handleConfigSubcommand(interaction, client) {
         const channelConfig = currentConfig.channelConfig || {};
 
         const configEmbed = new EmbedBuilder()
-            .setTitle('Join to Create Configuration')
-            .setDescription(`Configuration for ${triggerChannel}`)
+            .setTitle('הגדרות מערכת חדרים זמניים')
+            .setDescription(`לוח בקרה עבור ערוץ המאסטר: ${triggerChannel}`)
             .setColor(getColor('info'))
             .addFields(
                 {
-                    name: 'Channel Name Template',
+                    name: 'תבנית שם החדר',
                     value: `\`${channelConfig.nameTemplate || currentConfig.channelNameTemplate || "{username}'s Room"}\``,
                     inline: false
                 },
                 {
-                    name: 'User Limit',
-                    value: `${(channelConfig.userLimit ?? currentConfig.userLimit ?? 0) === 0 ? 'Unlimited' : (channelConfig.userLimit ?? currentConfig.userLimit ?? 0) + ' users'}`,
+                    name: 'מגבלת משתמשים',
+                    value: `${(channelConfig.userLimit ?? currentConfig.userLimit ?? 0) === 0 ? 'ללא הגבלה' : (channelConfig.userLimit ?? currentConfig.userLimit ?? 0) + ' משתמשים'}`,
                     inline: true
                 },
                 {
-                    name: 'Bitrate',
+                    name: 'איכות שמע (Bitrate)',
                     value: `${(channelConfig.bitrate ?? currentConfig.bitrate ?? 64000) / 1000} kbps`,
                     inline: true
                 }
             )
-            .setFooter({ text: 'Use the buttons below to modify settings • Only one trigger channel is supported per guild' })
+            .setFooter({ text: 'השתמש בכפתורים למטה כדי לערוך • נתמך ערוץ מאסטר אחד לכל שרת' })
             .setTimestamp();
 
         const nameButton = new ButtonBuilder()
             .setCustomId(`jtc_config_name_${triggerChannel.id}`)
-            .setLabel('📝 Name Template')
+            .setLabel('📝 תבנית שם')
             .setStyle(ButtonStyle.Primary);
 
         const limitButton = new ButtonBuilder()
             .setCustomId(`jtc_config_limit_${triggerChannel.id}`)
-            .setLabel('👥 User Limit')
+            .setLabel('👥 מגבלת משתמשים')
             .setStyle(ButtonStyle.Primary);
 
         const bitrateButton = new ButtonBuilder()
             .setCustomId(`jtc_config_bitrate_${triggerChannel.id}`)
-            .setLabel('🎵 Bitrate')
+            .setLabel('🎵 איכות שמע')
             .setStyle(ButtonStyle.Primary);
 
         const deleteButton = new ButtonBuilder()
             .setCustomId(`jtc_config_delete_${triggerChannel.id}`)
-            .setLabel('🗑️ Remove Channel')
+            .setLabel('🗑️ הסרת המערכת')
             .setStyle(ButtonStyle.Danger);
 
         const row = new ActionRowBuilder().addComponents(nameButton, limitButton, bitrateButton, deleteButton);
@@ -289,7 +287,7 @@ async function handleConfigSubcommand(interaction, client) {
             throw new TitanBotError(
                 'Failed to fetch interaction reply for collector setup',
                 ErrorTypes.DISCORD_API,
-                'Failed to open configuration controls. Please run `/jointocreate dashboard` again.'
+                'לא ניתן היה לפתוח את תפריט הניהול. אנא הרץ את הפקודה `/jointocreate dashboard` שוב.'
             );
         }
 
@@ -303,7 +301,7 @@ async function handleConfigSubcommand(interaction, client) {
                 
                 if (!hasManageGuildPermission(buttonInteraction.member)) {
                     await buttonInteraction.reply({
-                        content: '❌ You need **Manage Server** permission to use these controls.',
+                        content: '❌ אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בכפתורים אלו.',
                         flags: MessageFlags.Ephemeral
                     });
                     return;
@@ -322,8 +320,8 @@ async function handleConfigSubcommand(interaction, client) {
                 }
             } catch (error) {
                 const userMessage = error instanceof TitanBotError
-                    ? error.userMessage || 'An error occurred.'
-                    : 'An error occurred while processing your request.';
+                    ? error.userMessage || 'אירעה שגיאה.'
+                    : 'אירעה שגיאה בעיבוד הבקשה שלך.';
 
                 if (error instanceof TitanBotError) {
                     logger.debug(`Button interaction validation error: ${error.message}`, error.context || {});
@@ -348,7 +346,7 @@ async function handleConfigSubcommand(interaction, client) {
 
             message.edit({
                 components: [disabledRow],
-                embeds: [configEmbed.setFooter({ text: 'Configuration session expired. Run the command again to make changes.' })]
+                embeds: [configEmbed.setFooter({ text: 'פג תוקפו של סשן העריכה. הרץ את הפקודה מחדש כדי לבצע שינויים.' })]
             }).catch(() => {});
         });
 
@@ -359,7 +357,7 @@ async function handleConfigSubcommand(interaction, client) {
         throw new TitanBotError(
             `Config failed: ${error.message}`,
             ErrorTypes.DATABASE,
-            'Failed to load configuration.'
+            'טעינת הגדרות המערכת נכשלה.'
         );
     }
 }
@@ -367,16 +365,16 @@ async function handleConfigSubcommand(interaction, client) {
 async function handleNameTemplateModal(interaction, triggerChannel, currentConfig, client) {
     try {
         const TEMPLATE_OPTIONS = [
-            { label: "{username}'s Room (Default)", value: "{username}'s Room" },
-            { label: "{username}'s Channel",        value: "{username}'s Channel" },
-            { label: "{username}'s Lounge",         value: "{username}'s Lounge" },
-            { label: "{username}'s Space",          value: "{username}'s Space" },
-            { label: "{displayName}'s Room",        value: "{displayName}'s Room" },
-            { label: "{username}'s VC",             value: "{username}'s VC" },
-            { label: "{username}'s Music Room",  value: "{username}'s Music Room" },
-            { label: "{username}'s Gaming Room", value: "{username}'s Gaming Room" },
-            { label: "{username}'s Chat Room",   value: "{username}'s Chat Room" },
-            { label: "{username}'s Private Room",   value: "{username}'s Private Room" },
+            { label: "החדר של {username} (ברירת מחדל)", value: "{username}'s Room" },
+            { label: "הערוץ של {username}",         value: "{username}'s Channel" },
+            { label: "הלונג' של {username}",          value: "{username}'s Lounge" },
+            { label: "הספייס של {username}",          value: "{username}'s Space" },
+            { label: "החדר של {displayName}",         value: "{displayName}'s Room" },
+            { label: "ה-VC של {username}",              value: "{username}'s VC" },
+            { label: "חדר המוזיקה של {username}",   value: "{username}'s Music Room" },
+            { label: "חדר הגיימינג של {username}",  value: "{username}'s Gaming Room" },
+            { label: "חדר הדיבורים של {username}",    value: "{username}'s Chat Room" },
+            { label: "החדר הפרטי של {username}",    value: "{username}'s Private Room" },
         ];
 
         const currentTemplate = currentConfig.channelConfig?.nameTemplate
@@ -385,7 +383,7 @@ async function handleNameTemplateModal(interaction, triggerChannel, currentConfi
 
         const templateSelect = new StringSelectMenuBuilder()
             .setCustomId('template')
-            .setPlaceholder('Pick a name template...')
+            .setPlaceholder('בחר תבנית שם מהרשימה...')
             .setOptions(
                 TEMPLATE_OPTIONS.map(o => ({
                     label: o.label,
@@ -395,12 +393,12 @@ async function handleNameTemplateModal(interaction, triggerChannel, currentConfi
             );
 
         const templateLabel = new LabelBuilder()
-            .setLabel('Channel name template')
+            .setLabel('תבנית שם עבור החדרים הזמניים')
             .setStringSelectMenuComponent(templateSelect);
 
         const modal = new ModalBuilder()
             .setCustomId(`jtc_name_modal_${triggerChannel.id}`)
-            .setTitle('Channel Name Template')
+            .setTitle('עריכת תבנית שם')
             .addLabelComponents(templateLabel);
 
         await interaction.showModal(modal);
@@ -412,7 +410,7 @@ async function handleNameTemplateModal(interaction, triggerChannel, currentConfi
 
         if (!hasManageGuildPermission(modalSubmission.member)) {
             await modalSubmission.reply({
-                content: '❌ You need **Manage Server** permission to modify these settings.',
+                content: '❌ אתה זקוק להרשאת **ניהול שרת** כדי לערוך הגדרות אלו.',
                 flags: MessageFlags.Ephemeral
             });
             return;
@@ -429,8 +427,10 @@ async function handleNameTemplateModal(interaction, triggerChannel, currentConfi
             newTemplate
         });
 
+        const displayTemplateName = TEMPLATE_OPTIONS.find(o => o.value === newTemplate)?.label || newTemplate;
+
         await modalSubmission.reply({
-            embeds: [successEmbed('Updated', `Channel name template changed to \`${newTemplate}\``)],
+            embeds: [successEmbed('עודכן בהצלחה', `תבנית שם החדר שונתה ל: **${displayTemplateName}**`)],
             flags: MessageFlags.Ephemeral
         });
 
@@ -445,7 +445,7 @@ async function handleNameTemplateModal(interaction, triggerChannel, currentConfi
         throw new TitanBotError(
             `Modal error: ${error.message}`,
             ErrorTypes.UNKNOWN,
-            'An error occurred while updating the template.'
+            'אירעה שגיאה במהלך עדכון תבנית השם.'
         );
     }
 }
@@ -456,19 +456,19 @@ async function handleUserLimitModal(interaction, triggerChannel, currentConfig, 
 
         const modal = new ModalBuilder()
             .setCustomId(`jtc_limit_modal_${triggerChannel.id}`)
-            .setTitle('Configure User Limit')
+            .setTitle('הגדרת מגבלת משתמשים')
             .addComponents(
-                new ActionRowBuilder().addComponents(
+                { ...new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('user_limit')
-                        .setLabel('Enter user limit (0-99, 0 = unlimited)')
-                        .setPlaceholder('Enter a number between 0 and 99')
+                        .setLabel('הזן מגבלה (0-99, כאשר 0 = ללא הגבלה)')
+                        .setPlaceholder('לדוגמה: 5')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
                         .setMinLength(1)
                         .setMaxLength(2)
                         .setValue(currentLimit.toString())
-                )
+                ) }
             );
 
         await interaction.showModal(modal);
@@ -480,25 +480,26 @@ async function handleUserLimitModal(interaction, triggerChannel, currentConfig, 
 
         if (!hasManageGuildPermission(modalSubmission.member)) {
             await modalSubmission.reply({
-                content: '❌ You need **Manage Server** permission to modify these settings.',
+                content: '❌ אתה זקוק להרשאת **ניהול שרת** כדי לערוך הגדרות אלו.',
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
         const userInput = modalSubmission.fields.getTextInputValue('user_limit').trim();
+        const limitValue = parseInt(userInput);
 
         await updateChannelConfig(client, interaction.guild.id, triggerChannel.id, {
-            userLimit: parseInt(userInput)
+            userLimit: limitValue
         });
 
         await logConfigurationChange(client, interaction.guild.id, interaction.user.id, 'Updated user limit', {
             channelId: triggerChannel.id,
-            userLimit: parseInt(userInput)
+            userLimit: limitValue
         });
 
         await modalSubmission.reply({
-            embeds: [successEmbed('Updated', `User limit changed to ${parseInt(userInput) === 0 ? 'Unlimited' : parseInt(userInput) + ' users'}`)],
+            embeds: [successEmbed('עודכן בהצלחה', `מגבלת המשתמשים שונתה ל: **${limitValue === 0 ? 'ללא הגבלה' : limitValue + ' משתמשים'}**`)],
             flags: MessageFlags.Ephemeral
         });
 
@@ -513,7 +514,7 @@ async function handleUserLimitModal(interaction, triggerChannel, currentConfig, 
         throw new TitanBotError(
             `Modal error: ${error.message}`,
             ErrorTypes.UNKNOWN,
-            'An error occurred while updating the user limit.'
+            'אירעה שגיאה במהלך עדכון מגבלת המשתמשים.'
         );
     }
 }
@@ -524,19 +525,19 @@ async function handleBitrateModal(interaction, triggerChannel, currentConfig, cl
 
         const modal = new ModalBuilder()
             .setCustomId(`jtc_bitrate_modal_${triggerChannel.id}`)
-            .setTitle('Configure Bitrate')
+            .setTitle('הגדרת איכות שמע (Bitrate)')
             .addComponents(
-                new ActionRowBuilder().addComponents(
+                { ...new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('bitrate')
-                        .setLabel('Enter bitrate in kbps (8-384)')
-                        .setPlaceholder('Enter a number between 8 and 384')
+                        .setLabel('הזן איכות ב-kbps (טווח: 8-384)')
+                        .setPlaceholder('ברירת המחדל היא 64')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
                         .setMinLength(1)
                         .setMaxLength(3)
                         .setValue(currentBitrate.toString())
-                )
+                ) }
             );
 
         await interaction.showModal(modal);
@@ -548,25 +549,26 @@ async function handleBitrateModal(interaction, triggerChannel, currentConfig, cl
 
         if (!hasManageGuildPermission(modalSubmission.member)) {
             await modalSubmission.reply({
-                content: '❌ You need **Manage Server** permission to modify these settings.',
+                content: '❌ אתה זקוק להרשאת **ניהול שרת** כדי לערוך הגדרות אלו.',
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
         const userInput = modalSubmission.fields.getTextInputValue('bitrate').trim();
+        const bitrateValue = parseInt(userInput);
 
         await updateChannelConfig(client, interaction.guild.id, triggerChannel.id, {
-            bitrate: parseInt(userInput) * 1000
+            bitrate: bitrateValue * 1000
         });
 
         await logConfigurationChange(client, interaction.guild.id, interaction.user.id, 'Updated bitrate', {
             channelId: triggerChannel.id,
-            bitrate: parseInt(userInput)
+            bitrate: bitrateValue
         });
 
         await modalSubmission.reply({
-            embeds: [successEmbed('Updated', `Bitrate changed to ${parseInt(userInput)} kbps`)],
+            embeds: [successEmbed('עודכן בהצלחה', `איכות השמע (Bitrate) שונתה ל: **${bitrateValue} kbps**`)],
             flags: MessageFlags.Ephemeral
         });
 
@@ -581,7 +583,7 @@ async function handleBitrateModal(interaction, triggerChannel, currentConfig, cl
         throw new TitanBotError(
             `Modal error: ${error.message}`,
             ErrorTypes.UNKNOWN,
-            'An error occurred while updating the bitrate.'
+            'אירעה שגיאה במהלך עדכון איכות השמע.'
         );
     }
 }
@@ -591,16 +593,16 @@ async function handleChannelDeletion(interaction, triggerChannel, currentConfig,
         const confirmRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`jtc_delete_confirm_${triggerChannel.id}`)
-                .setLabel('🗑️ Yes, Delete')
+                .setLabel('🗑️ כן, מחק מערכת')
                 .setStyle(ButtonStyle.Danger),
             new ButtonBuilder()
                 .setCustomId(`jtc_delete_cancel_${triggerChannel.id}`)
-                .setLabel('❌ Cancel')
+                .setLabel('❌ ביטול')
                 .setStyle(ButtonStyle.Secondary)
         );
 
         await InteractionHelper.safeReply(interaction, {
-            embeds: [warningEmbed('Confirm Deletion', `Are you sure you want to remove **${triggerChannel.name}** from the Join to Create system?\n\nThis action cannot be undone.`)],
+            embeds: [warningEmbed('אישור מחיקה', `האם אתה בטוח שברצונך להסיר את **${triggerChannel.name}** ממערכת החדרים הזמניים?\n\nפעולה זו אינה ניתנת לביטול והערוץ יימחק מהרשימה.`)],
             components: [confirmRow],
             flags: MessageFlags.Ephemeral
         });
@@ -611,7 +613,7 @@ async function handleChannelDeletion(interaction, triggerChannel, currentConfig,
             filter: (i) => i.user.id === interaction.user.id && 
                           (i.customId === `jtc_delete_confirm_${triggerChannel.id}` || 
                            i.customId === `jtc_delete_cancel_${triggerChannel.id}`),
-            time: 600_000,
+            time: 600000,
             max: 1
         });
 
@@ -620,7 +622,7 @@ async function handleChannelDeletion(interaction, triggerChannel, currentConfig,
                 
                 if (!hasManageGuildPermission(buttonInteraction.member)) {
                     await buttonInteraction.reply({
-                        content: '❌ You need **Manage Server** permission to remove channels.',
+                        content: '❌ אתה זקוק להרשאת **ניהול שרת** כדי להסיר מערכות מהשרת.',
                         flags: MessageFlags.Ephemeral
                     });
                     return;
@@ -641,24 +643,23 @@ async function handleChannelDeletion(interaction, triggerChannel, currentConfig,
                         }
                     } catch (deleteError) {
                         logger.warn(`Could not delete channel ${triggerChannel.id}: ${deleteError.message}`);
-                        
                     }
 
                     await buttonInteraction.update({
-                        embeds: [successEmbed('Removed', `**${triggerChannel.name}** has been removed from the Join to Create system.`)],
+                        embeds: [successEmbed('המערכת הוסרה', `הערוץ **${triggerChannel.name}** הוסר בהצלחה ממערכת החדרים הזמניים.`)],
                         components: []
                     });
 
                 } else {
                     await buttonInteraction.update({
-                        embeds: [successEmbed('Cancelled', 'Channel removal has been cancelled.')],
+                        embeds: [successEmbed('הפעולה בוטלה', 'מחיקת המערכת בוטלה בהצלחה.')],
                         components: []
                     });
                 }
             } catch (collectError) {
                 logger.error('Error handling delete confirmation:', collectError);
                 await buttonInteraction.reply({
-                    content: '❌ An error occurred while processing your request.',
+                    content: '❌ אירעה שגיאה בלתי צפויה במהלך עיבוד הבקשה.',
                     flags: MessageFlags.Ephemeral
                 }).catch(() => {});
             }
@@ -678,7 +679,7 @@ async function handleChannelDeletion(interaction, triggerChannel, currentConfig,
         throw new TitanBotError(
             `Deletion error: ${error.message}`,
             ErrorTypes.UNKNOWN,
-            'An error occurred while removing the channel.'
+            'אירעה שגיאה במהלך ניסיון מחיקת הערוץ.'
         );
     }
 }
