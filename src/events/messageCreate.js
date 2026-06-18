@@ -68,9 +68,10 @@ async function handlePrefixCommand(message, client) {
     const restriction = getPrefixRestriction(command, args, resolveSubcommandAlias);
     if (!supportsPrefixExecution(command) || restriction.blocked) {
       if (restriction.blocked && restriction.reason) {
+        // תרגום: התראת פקודת סלאש בלבד
         const embed = createEmbed({
-          title: 'Slash Command Only',
-          description: `${restriction.reason}\nUse \`/${resolvedCommandName}\` instead.`,
+          title: '⌨️ פקודת Slash בלבד',
+          description: `הפקודה הזו זמינה רק דרך מערכת הסלאש של דיסקורד.\nבבקשה תשתמש ב- \`/${resolvedCommandName}\` במקום.`,
           color: 'info',
         });
         await message.channel.send({ embeds: [embed] }).catch(() => {});
@@ -79,9 +80,10 @@ async function handlePrefixCommand(message, client) {
     }
 
     if (!(await isCommandEnabled(client, message.guild.id, resolvePrefixAccessKey(command.data, args), command.category))) {
+      // תרגום: פקודה כבויה בשרת
       const embed = createEmbed({
-        title: 'Command Disabled',
-        description: 'This command has been disabled for this server.',
+        title: '❌ הפקודה כבויה',
+        description: 'הפקודה הזו הושבתה על ידי מנהלי השרת עבור שרת זה.',
         color: 'error',
       });
       await message.channel.send({ embeds: [embed] }).catch(() => {});
@@ -99,9 +101,10 @@ async function handlePrefixCommand(message, client) {
     );
     if (!abuseProtection.allowed) {
       const formattedCooldown = formatCooldownDuration(abuseProtection.remainingMs);
+      // תרגום: פקודה בהמתנה (Cooldown)
       const embed = createEmbed({
-        title: 'Command Cooldown',
-        description: `This command is on cooldown. Please wait ${formattedCooldown} before trying again.`,
+        title: '⏱️ הפקודה בהמתנה',
+        description: `אתה משתמש בפקודות מהר מדי! בבקשה המתן **${formattedCooldown}** לפני שתנסה שוב.`,
         color: 'error',
       });
       await message.channel.send({ embeds: [embed] }).catch(() => {});
@@ -136,7 +139,8 @@ async function handleCountingGame(message, client) {
         currentStreak: 0,
       });
 
-      const failureMessage = await message.channel.send(`❌ Count broken by <@${message.author.id}>. The sequence has been reset to **1**.`);
+      // תרגום: הודעת הרס הרצף במשחק הספירה
+      const failureMessage = await message.channel.send(`❌ **הרצף נהרס!** על ידי <@${message.author.id}>. הספירה אופסה והתחילה מחדש מהמספר **1**.`);
       setTimeout(() => {
         failureMessage.delete().catch(() => {});
       }, 10000);
