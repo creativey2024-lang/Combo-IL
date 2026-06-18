@@ -8,22 +8,22 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('randomuser')
-        .setDescription('Select a random user from the server')
+        .setDescription('בחירת משתמש אקראי מהשרת')
         .addRoleOption(option =>
             option.setName('role')
-                .setDescription('Limit selection to users with this role')
+                .setDescription('הגבלת הבחירה למשתמשים בעלי תפקיד זה בלבד')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('bots')
-                .setDescription('Include bots in the selection (default: false)')
+                .setDescription('האם לכלול בוטים בבחירה (ברירת מחדל: לא)')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('online')
-                .setDescription('Only select from online users (default: false)')
+                .setDescription('בחירה מתוך משתמשים מחוברים בלבד (ברירת מחדל: לא)')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('mention')
-                .setDescription('Mention the selected user (default: false)')
+                .setDescription('האם לתייג את המשתמש שנבחר (ברירת מחדל: לא)')
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -37,11 +37,11 @@ export default {
             return;
         }
 
-try {
+        try {
             if (!interaction.guild) {
                 return replyUserError(interaction, {
                     type: ErrorTypes.VALIDATION,
-                    message: 'This command can only be used in a server/guild.',
+                    message: 'ניתן להשתמש בפקודה זו בתוך שרת בלבד.',
                 });
             }
             
@@ -67,14 +67,14 @@ try {
             }
             
             if (memberArray.length === 0) {
-                let errorMessage = 'Could not find any users matching your filters:';
-                if (role) errorMessage = `No users have the **${role.name}** role.`;
-                if (onlineOnly) errorMessage = 'No users are currently online.'; 
-                if (role && onlineOnly) errorMessage = `No **${role.name}** members are online.`;
+                let errorMessage = 'לא נמצאו משתמשים התואמים למסננים שלך:';
+                if (role) errorMessage = `אין משתמשים בעלי התפקיד **${role.name}**.`;
+                if (onlineOnly) errorMessage = 'אין משתמשים מחוברים כרגע.'; 
+                if (role && onlineOnly) errorMessage = `אין משתמשים מחוברים בעלי התפקיד **${role.name}**.`;
                 
                 return replyUserError(interaction, {
                     type: ErrorTypes.USER_INPUT,
-                    message: errorMessage + '\n\nTry adjusting your filters.',
+                    message: errorMessage + '\n\nנסה לשנות את המסננים שבחרת.',
                 });
             }
             
@@ -82,42 +82,42 @@ try {
             const selectedMember = memberArray[randomIndex];
             
             const user = selectedMember.user;
-            const joinDate = selectedMember.joinedAt;
             const roles = selectedMember.roles.cache
-.filter(role => role.id !== interaction.guild.id)
+                .filter(role => role.id !== interaction.guild.id)
                 .sort((a, b) => b.position - a.position)
                 .map(role => role.toString())
-.slice(0, 10);
+                .slice(0, 10);
             
             const embed = successEmbed(
-                '🎲 Random User Selected',
+                '🎲 משתמש אקראי נבחר',
                 shouldMention ? `${selectedMember}` : `**${user.username}**`
             )
             .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 256 }))
             .addFields(
-                { name: 'Username', value: user.username, inline: true },
-                { name: 'Bot', value: user.bot ? 'Yes' : 'No', inline: true },
-                { name: `Roles (${roles.length})`, value: roles.length > 0 ? roles.slice(0, 5).join('') + (roles.length > 5 ? `+${roles.length - 5} more` : '') : 'No roles', inline: false }
+                { name: 'שם משתמש', value: user.username, inline: true },
+                { name: 'בוט', value: user.bot ? 'כן' : 'לא', inline: true },
+                { name: `תפקידים (${roles.length})`, value: roles.length > 0 ? roles.slice(0, 5).join(' ') + (roles.length > 5 ? ` + עוד ${roles.length - 5}` : '') : 'אין תפקידים', inline: false }
             )
-            .setColor('primary');
+            .setColor('primary')
+            .setFooter({ text: 'Combo IL • אמטיקינג יצר את זה' });
             
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`randomuser_${interaction.user.id}_again`)
-                        .setLabel('🎲 Pick Another User')
+                        .setLabel('🎲 בחר משתמש אחר')
                         .setStyle(ButtonStyle.Primary)
                 );
             
             const response = await interaction.editReply({
-                content: shouldMention ? `${selectedMember}, you've been chosen!` : null,
+                content: shouldMention ? `${selectedMember}, נבחרת בגורל!` : null,
                 embeds: [embed],
                 components: [row],
                 allowedMentions: { users: shouldMention ? [user.id] : [] }
             });
             
             const filter = (i) => i.customId === `randomuser_${interaction.user.id}_again` && i.user.id === interaction.user.id;
-const collector = response.createMessageComponentCollector({ filter, time: 300000 });
+            const collector = response.createMessageComponentCollector({ filter, time: 300000 });
             
             collector.on('collect', async (i) => {
                 try {
@@ -140,7 +140,7 @@ const collector = response.createMessageComponentCollector({ filter, time: 30000
                     if (newMemberArray.length === 0) {
                         await replyUserError(i, {
                             type: ErrorTypes.USER_INPUT,
-                            message: 'No users found matching the criteria.',
+                            message: 'לא נמצאו משתמשים התואמים לקריטריונים.',
                         });
                         return;
                     }
@@ -156,19 +156,20 @@ const collector = response.createMessageComponentCollector({ filter, time: 30000
                         .slice(0, 10);
                     
                     const newEmbed = successEmbed(
-                        '🎲 Random User Selected',
+                        '🎲 משתמש אקראי נבחר',
                         shouldMention ? `${newSelectedMember}` : `**${newUser.username}**`
                     )
                     .setThumbnail(newUser.displayAvatarURL({ dynamic: true, size: 256 }))
                     .addFields(
-                        { name: 'Username', value: newUser.username, inline: true },
-                        { name: 'Bot', value: newUser.bot ? 'Yes' : 'No', inline: true },
-                        { name: `Roles (${newRoles.length})`, value: newRoles.length > 0 ? newRoles.slice(0, 5).join('') + (newRoles.length > 5 ? `+${newRoles.length - 5} more` : '') : 'No roles', inline: false }
+                        { name: 'שם משתמש', value: newUser.username, inline: true },
+                        { name: 'בוט', value: newUser.bot ? 'כן' : 'לא', inline: true },
+                        { name: `תפקידים (${newRoles.length})`, value: newRoles.length > 0 ? newRoles.slice(0, 5).join(' ') + (newRoles.length > 5 ? ` + עוד ${newRoles.length - 5}` : '') : 'אין תפקידים', inline: false }
                     )
-                    .setColor(newSelectedMember.displayHexColor || '#3498db');
+                    .setColor(newSelectedMember.displayHexColor || '#3498db')
+                    .setFooter({ text: 'Combo IL • אמטיקינג יצר את זה' });
                     
                     await i.update({
-                        content: shouldMention ? `${newSelectedMember}, you've been chosen!` : null,
+                        content: shouldMention ? `${newSelectedMember}, נבחרת בגורל!` : null,
                         embeds: [newEmbed],
                         components: [row],
                         allowedMentions: { users: shouldMention ? [newUser.id] : [] }
@@ -177,7 +178,7 @@ const collector = response.createMessageComponentCollector({ filter, time: 30000
                 } catch (error) {
                     logger.error('Button interaction error:', error);
                     await i.reply({
-                        content: 'An error occurred while selecting another user.',
+                        content: 'התרחשה שגיאה בעת ניסיון לבחור משתמש אחר.',
                         flags: ['Ephemeral']
                     });
                 }
