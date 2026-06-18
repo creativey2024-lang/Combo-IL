@@ -2,25 +2,25 @@ import { getColor } from '../../config/bot.js';
 import { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } from 'discord.js';
 import { successEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
-import { handleInteractionError } from '../../utils/errorHandler.js';
+import { handleInteractionError, replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { getTicketPermissionContext } from '../../utils/ticketPermissions.js';
 import { closeTicket } from '../../services/ticket.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("close")
-        .setDescription("Closes the current ticket.")
+        .setDescription("סגירת הטיקט הנוכחי")
         .setDMPermission(false)
         .addStringOption((option) =>
             option
                 .setName("reason")
-                .setDescription("The reason for closing the ticket.")
+                .setDescription("הסיבה לסגירת הטיקט")
                 .setRequired(false),
         ),
 
     async execute(interaction, guildConfig, client) {
         try {
-            
             const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
             if (!deferred) {
                 return;
@@ -28,17 +28,17 @@ export default {
 
             const permissionContext = await getTicketPermissionContext({ client, interaction });
             if (!permissionContext.ticketData) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'This command can only be used in a valid ticket channel.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'ניתן להשתמש בפקודה זו רק בתוך ערוץ טיקט תקין.' });
             }
 
             if (!permissionContext.canCloseTicket) {
-                return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the `Manage Channels` permission, the configured `Ticket Staff Role`, or be the ticket creator to close this ticket.' });
+                return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'דרושה הרשאת `Manage Channels` (ניהול ערוצים), תפקיד צוות טיקטים מוגדר, או להיות יוצר הטיקט כדי לסגור אותו.' });
             }
 
             const channel = interaction.channel;
             const reason =
                 interaction.options?.getString("reason") ||
-                "Closed via command without a specific reason.";
+                "הטיקט נסגר דרך פקודה ללא סיבה מפורטת.";
 
             const result = await closeTicket(channel, interaction.user, reason);
             
@@ -49,14 +49,14 @@ export default {
                     guildId: interaction.guildId,
                     error: result.error
                 });
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'result.error || "This command can only be used in a valid ticket channel."' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: result.error || "לא ניתן לסגור את הטיקט הזה." });
             }
 
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        "Ticket Closed!",
-                        "This ticket has been closed successfully.",
+                        "הטיקט נסגר!",
+                        "הטיקט נסגר בהצלחה.",
                     ),
                 ],
             });
