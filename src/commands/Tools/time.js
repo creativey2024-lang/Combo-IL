@@ -3,24 +3,25 @@ import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/
 import { logger } from '../../utils/logger.js';
 import { replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('time')
-        .setDescription('Get the current time in different timezones')
+        .setDescription('הצגת הזמן הנוכחי באזורי זמן שונים')
         .addStringOption(option =>
             option.setName('timezone')
-                .setDescription('The timezone to display (e.g., UTC, America/New_York)')
+                .setDescription('אזור הזמן להצגה (לדוגמה: UTC, Asia/Jerusalem, America/New_York)')
                 .setRequired(false)),
 
     async execute(interaction) {
         await InteractionHelper.safeExecute(
             interaction,
             async () => {
-                const timezone = interaction.options.getString('timezone') || 'UTC';
+                const timezone = interaction.options.getString('timezone') || 'Asia/Jerusalem';
 
                 let timeString;
                 try {
-                    timeString = new Date().toLocaleString('en-US', {
+                    timeString = new Date().toLocaleString('he-IL', {
                         timeZone: timezone,
                         weekday: 'long',
                         year: 'numeric',
@@ -35,7 +36,7 @@ export default {
                     logger.warn(`Invalid timezone requested: ${timezone}`);
                     await replyUserError(interaction, {
                         type: ErrorTypes.VALIDATION,
-                        message: 'Invalid timezone. Please use a valid timezone identifier (e.g., UTC, America/New_York, Europe/London)',
+                        message: 'אזור זמן לא תקין. אנא השתמשו במזהה אזור זמן תקף (לדוגמה: Asia/Jerusalem, UTC, America/New_York)',
                     });
                     return;
                 }
@@ -44,15 +45,17 @@ export default {
                 const unixTimestamp = Math.floor(now.getTime() / 1000);
 
                 const embed = successEmbed(
-                    '🕒 Current Time',
-                    `**${timezone}:** ${timeString}\n` +
+                    '🕒 זמן נוכחי',
+                    `**אזור זמן (${timezone}):** ${timeString}\n` +
                     `**Unix Timestamp:** \`${unixTimestamp}\`\n` +
                     `**ISO String:** \`${now.toISOString()}\``
                 );
 
+                embed.setFooter({ text: 'Combo IL • אמטיקינג יצר את זה' });
+
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             },
-            'Failed to get current time. Please try again.',
+            'שגיאה בהבאת הזמן הנוכחי. אנא נסו שוב.',
             {
                 autoDefer: true,
                 deferOptions: { flags: MessageFlags.Ephemeral }
