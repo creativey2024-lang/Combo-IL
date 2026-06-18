@@ -10,22 +10,22 @@ const MIN_WORK_AMOUNT = 50;
 const MAX_WORK_AMOUNT = 300;
 const LAPTOP_MULTIPLIER = 1.5;
 const WORK_JOBS = [
-    "Software Developer",
-    "Barista",
-    "Janitor",
-    "YouTuber",
-    "Discord Bot Developer",
-    "Cashier",
-    "Pizza Delivery Driver",
-    "Librarian",
-    "Gardener",
-    "Data Analyst",
+    "מפתח תוכנה",
+    "בריסטה",
+    "עובד ניקיון",
+    "יוטיובר",
+    "מפתח בוטים ל-Discord",
+    "קופאי",
+    "שליח פיצה",
+    "ספרן",
+    "גנן",
+    "אנליסט נתונים",
 ];
 
 export default {
     data: new SlashCommandBuilder()
         .setName('work')
-        .setDescription('Work to earn some money'),
+        .setDescription('עבוד כדי להרוויח קצת כסף'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -41,7 +41,7 @@ export default {
                 throw createError(
                     "Failed to load economy data for work",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "טעינת נתוני הכלכלה שלך נכשלה. אנא נסה שוב מאוחר יותר.",
                     { userId, guildId }
                 );
             }
@@ -65,7 +65,7 @@ export default {
                     throw createError(
                         "Work cooldown active",
                         ErrorTypes.RATE_LIMIT,
-                        `You're working too fast! Wait **${Math.floor(remaining / 3600000)}h ${Math.floor((remaining % 3600000) / 60000)}m** before working again.`,
+                        `אתה עובד מהר מדי! המתן עוד **${Math.floor(remaining / 3600000)} שעות ו-${Math.floor((remaining % 3600000) / 60000)} דקות** לפני שתעבוד שוב.`,
                         { timeRemaining: remaining, cooldownType: 'work' }
                     );
                 }
@@ -77,7 +77,7 @@ export default {
             let multiplierMessage = "";
             if (hasLaptop > 0) {
                 earned = Math.floor(earned * LAPTOP_MULTIPLIER);
-                multiplierMessage = "\n💻 **Laptop Bonus:** +50% earnings!";
+                multiplierMessage = "\n💻 **בונוס מחשב נייד:** +50% לרווחים!";
             }
 
             userData.wallet = (userData.wallet || 0) + earned;
@@ -97,23 +97,23 @@ export default {
             });
 
             const embed = successEmbed(
-                "💼 Work Complete!",
-                `You worked as a **${job}** and earned **$${earned.toLocaleString()}**!${multiplierMessage}`
+                "💼 העבודה הושלמה!",
+                `עבדת בתור **${job}** והרווחת **$${earned.toLocaleString()}**!${multiplierMessage}`
             )
                 .addFields(
                     {
-                        name: "New Balance",
+                        name: "יתרה חדשה",
                         value: `$${userData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: "Next Work",
+                        name: "העבודה הבאה זמינה",
                         value: `<t:${Math.floor((now + WORK_COOLDOWN) / 1000)}:R>`,
                         inline: true,
                     }
                 )
                 .setFooter({
-                    text: `Requested by ${interaction.user.tag}`,
+                    text: `הוגש על ידי ${interaction.user.tag}`,
                     iconURL: interaction.user.displayAvatarURL(),
                 });
 
