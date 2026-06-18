@@ -8,28 +8,28 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('welcome')
-        .setDescription('Configure the welcome system')
+        .setDescription('הגדרת מערכת הודעות ברוכים הבאים בשרת')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setup')
-                .setDescription('Set up the welcome message')
+                .setDescription('הגדרת הודעת ברוכים הבאים חדשה')
                 .addChannelOption(option =>
                     option.setName('channel')
-                        .setDescription('The channel to send welcome messages to')
+                        .setDescription('הערוץ אליו יישלחו הודעות ברוכים הבאים')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('message')
-                        .setDescription('Welcome message. Variables: {user}, {username}, {server}, {memberCount}')
+                        .setDescription('הודעת ברוכים הבאים. משתנים: {user}, {username}, {server}, {memberCount}')
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('image')
-                        .setDescription('URL of the image to include in the welcome message')
+                        .setDescription('קישור (URL) לתמונה שברצונכם לצרף להודעה')
                         .setRequired(false))
                 .addBooleanOption(option =>
                     option.setName('ping')
-                        .setDescription('Whether to ping the user in the welcome message')
+                        .setDescription('האם לתייג (Ping) את המשתמש החדש בהודעה')
                         .setRequired(false))),
 
     async execute(interaction) {
@@ -51,7 +51,7 @@ export default {
         const { options, guild, client } = interaction;
 
         if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the **Manage Server** permission to use `/welcome`.' });
+            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בפקודה `/welcome`.' });
         }
 
         const subcommand = options.getSubcommand();
@@ -65,12 +65,12 @@ export default {
             const existingConfig = await getWelcomeConfig(client, guild.id);
             if (existingConfig?.channelId) {
                 logger.info(`[Welcome] Setup blocked because config already exists in channel ${existingConfig.channelId} for guild ${guild.id}`);
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Welcome is already configured for <#${existingConfig.channelId}>. Use **/welcome config** to customize channel, message, ping, or image.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `מערכת ברוכים הבאים כבר מוגדרת בערוץ <#${existingConfig.channelId}>. השתמשו בפקודה **/welcome config** כדי לערוך את ההגדרות.` });
             }
             
             if (!message || message.trim().length === 0) {
                 logger.warn(`[Welcome] Empty message provided by ${interaction.user.tag} in ${guild.name}`);
-                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Welcome message cannot be empty' });
+                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'הודעת ברוכים הבאים אינה יכולה להיות ריקה.' });
             }
 
             if (image) {
@@ -78,7 +78,7 @@ export default {
                     new URL(image);
                 } catch (e) {
                     logger.warn(`[Welcome] Invalid image URL provided by ${interaction.user.tag}: ${image}`);
-                    return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Please provide a valid image URL (must start with http:// or https://' });
+                    return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'אנא ספקו קישור תקין לתמונה (חייב להתחיל ב-http:// או https://)' });
                 }
             }
 
@@ -100,14 +100,14 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(getColor('success'))
-                    .setTitle('Welcome System Configured')
-                    .setDescription(`Welcome messages will now be sent to ${channel}`)
+                    .setTitle('מערכת ברוכים הבאים הוגדרה בהצלחה')
+                    .setDescription(`הודעות הצטרפות יישלחו מעתה לערוץ ${channel}`)
                     .addFields(
-                        { name: 'Message Preview', value: previewMessage },
-                        { name: 'Ping User', value: ping ? 'Yes' : 'No' },
-                        { name: 'Status', value: 'Enabled' }
+                        { name: 'תצוגה מקדימה של ההודעה', value: previewMessage },
+                        { name: 'תיוג משתמש', value: ping ? 'כן' : 'לא' },
+                        { name: 'סטטוס', value: 'מופעל' }
                     )
-                    .setFooter({ text: 'Tip: Use /welcome config to customize welcome settings' });
+                    .setFooter({ text: 'טיפ: ניתן להשתמש בפקודה /welcome config כדי להתאים אישית את ההגדרות' });
 
                 if (image) {
                     embed.setImage(image);
@@ -116,7 +116,7 @@ export default {
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             } catch (error) {
                 logger.error(`[Welcome] Failed to setup welcome system for guild ${guild.id}:`, error);
-                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while configuring the welcome system. Please try again.' });
+                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'התרחשה שגיאה בעת הגדרת מערכת ברוכים הבאים. אנא נסו שוב.' });
             }
         }
     },
