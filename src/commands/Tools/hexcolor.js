@@ -7,9 +7,9 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('hexcolor')
-        .setDescription('Generate a random hex color with preview')
+        .setDescription('יוצר צבע ראנדומלי')
         .addStringOption(option =>
-            option.setName('color')
+            option.setName('צבע')
                 .setDescription('Specific hex color (e.g., #FF5733 or FF5733)')
                 .setRequired(false)),
 
