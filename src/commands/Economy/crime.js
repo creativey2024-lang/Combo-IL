@@ -11,28 +11,28 @@ const FAILURE_RATE = 0.4;
 const JAIL_TIME = 2 * 60 * 60 * 1000;
 
 const CRIME_TYPES = [
-    { name: "Pickpocketing", min: 100, max: 500, risk: 0.3 },
-    { name: "Burglary", min: 300, max: 1000, risk: 0.4 },
-    { name: "Bank Heist", min: 1000, max: 5000, risk: 0.6 },
-    { name: "Art Theft", min: 2000, max: 10000, risk: 0.7 },
-    { name: "Cybercrime", min: 5000, max: 20000, risk: 0.8 },
+    { name: "כיוס (Pickpocketing)", min: 100, max: 500, risk: 0.3, id: 'pickpocketing' },
+    { name: "פריצה (Burglary)", min: 300, max: 1000, risk: 0.4, id: 'burglary' },
+    { name: "שוד בנק (Bank Heist)", min: 1000, max: 5000, risk: 0.6, id: 'bank-heist' },
+    { name: "גניבת אמנות (Art Theft)", min: 2000, max: 10000, risk: 0.7, id: 'art-theft' },
+    { name: "פשע סייבר (Cybercrime)", min: 5000, max: 20000, risk: 0.8, id: 'cybercrime' },
 ];
 
 export default {
     data: new SlashCommandBuilder()
         .setName('crime')
-        .setDescription('Commit a crime to earn money (risky)')
+        .setDescription('ביצוע פשע כדי להרוויח כסף (מסוכן)')
         .addStringOption(option =>
             option
                 .setName('type')
-                .setDescription('Type of crime to commit')
+                .setDescription('סוג הפשע שברצונך לבצע')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'Pickpocketing', value: 'pickpocketing' },
-                    { name: 'Burglary', value: 'burglary' },
-                    { name: 'Bank Heist', value: 'bank-heist' },
-                    { name: 'Art Theft', value: 'art-theft' },
-                    { name: 'Cybercrime', value: 'cybercrime' },
+                    { name: 'כיוס 🎒', value: 'pickpocketing' },
+                    { name: 'פריצה לבית 🏠', value: 'burglary' },
+                    { name: 'שוד בנק 🏦', value: 'bank-heist' },
+                    { name: 'גניבת יצירת אמנות 🖼️', value: 'art-theft' },
+                    { name: 'פשע סייבר 💻', value: 'cybercrime' },
                 )
         ),
 
@@ -52,7 +52,7 @@ export default {
                 throw createError(
                     "User is in jail",
                     ErrorTypes.RATE_LIMIT,
-                    `You're in jail for ${timeLeft} more minutes!`,
+                    `אתה נמצא בכלא לעוד ${timeLeft} דקות!`,
                     { jailTimeRemaining: userData.jailedUntil - now }
                 );
             }
@@ -62,29 +62,28 @@ export default {
                 throw createError(
                     "Crime cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `You need to wait ${timeLeft} more minutes before committing another crime.`,
+                    `עליך להמתין עוד ${timeLeft} דקות לפני שתוכל לבצע פשע נוסף.`,
                     { remaining: lastCrime + CRIME_COOLDOWN - now, cooldownType: 'crime' }
                 );
             }
 
             const crimeType = interaction.options.getString("type").toLowerCase();
-            const crime = CRIME_TYPES.find(
-                c => c.name.toLowerCase().replace(/\s+/g, '-') === crimeType
-            );
+            const crime = CRIME_TYPES.find(c => c.id === crimeType);
 
             if (!crime) {
                 throw createError(
                     "Invalid crime type",
                     ErrorTypes.VALIDATION,
-                    "Please select a valid crime type.",
+                    "אנא בחר סוג פשע תקין מהרשימה.",
                     { crimeType }
                 );
             }
 
             const isSuccess = Math.random() > crime.risk;
-            const amountEarned = isSuccess
-                ? Math.floor(Math.random() * (crime.max - crime.min + 1)) + crime.min
-                : 0;
+            
+            // בחישוב הקנס במקרה של כישלון, אנו מגניבים פוטנציאל רווח היפותטי כדי לגזור ממנו את ה-20% קנס
+            const potentialEarned = Math.floor(Math.random() * (crime.max - crime.min + 1)) + crime.min;
+            const amountEarned = isSuccess ? potentialEarned : 0;
 
             userData.cooldowns = userData.cooldowns || {};
             userData.cooldowns.crime = now;
@@ -95,22 +94,22 @@ export default {
                 await setEconomyData(client, guildId, userId, userData);
                 
                 const embed = successEmbed(
-                    "🕵️ Crime Successful!",
-                    `You successfully committed ${crime.name} and earned **${amountEarned}** coins!`
+                    "🕵️ הפשע הצליח!",
+                    `ביצעת בהצלחה את הפשע **${crime.name.split(' (')[0]}** והרווחת **$${amountEarned.toLocaleString()}** מטבעות!`
                 );
                 
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             } else {
-                const fine = Math.floor(amountEarned * 0.2);
+                const fine = Math.floor(potentialEarned * 0.2);
                 userData.wallet = Math.max(0, (userData.wallet || 0) - fine);
                 userData.jailedUntil = now + JAIL_TIME;
                 
                 await setEconomyData(client, guildId, userId, userData);
                 
                 const embed = warningEmbed(
-                    "🚔 Crime Failed!",
-                    `You were caught while attempting ${crime.name} and have been sent to jail!` +
-                    `You were fined ${fine} coins and will be in jail for 2 hours.`
+                    "🚔 נתפסת על חם!",
+                    `נתפסת בזמן שניסית לבצע **${crime.name.split(' (')[0]}** ונשלחת ישירות לכלא!\n` +
+                    `נקנסת בסך של **$${fine.toLocaleString()}** מטבעות ותישאר מאחורי הסורגים למשך שעתיים.`
                 );
                 
                 await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
