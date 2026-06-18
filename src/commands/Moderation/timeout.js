@@ -6,37 +6,37 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { ModerationService } from '../../services/moderationService.js';
 
 const durationChoices = [
-    { name: "5 minutes", value: 5 },
-    { name: "10 minutes", value: 10 },
-    { name: "30 minutes", value: 30 },
-    { name: "1 hour", value: 60 },
-    { name: "6 hours", value: 360 },
-    { name: "1 day", value: 1440 },
-    { name: "1 week", value: 10080 },
+    { name: "5 דקות", value: 5 },
+    { name: "10 דקות", value: 10 },
+    { name: "30 דקות", value: 30 },
+    { name: "שעה אחת", value: 60 },
+    { name: "6 שעות", value: 360 },
+    { name: "יום אחד", value: 1440 },
+    { name: "שבוע אחד", value: 10080 },
 ];
 
 export default {
     data: new SlashCommandBuilder()
         .setName("timeout")
-        .setDescription("Timeout a user for a specific duration.")
+        .setDescription("השתקה זמנית (Timeout) של משתמש לפרק זמן מסוים.")
         .addUserOption((option) =>
             option
                 .setName("target")
-                .setDescription("User to timeout")
+                .setDescription("המשתמש להשתקה")
                 .setRequired(true),
         )
         .addIntegerOption(
             (option) =>
                 option
                     .setName("duration")
-                    .setDescription("Duration of the timeout")
+                    .setDescription("משך זמן ההשתקה")
                     .setRequired(true)
-.addChoices(...durationChoices),
+                    .addChoices(...durationChoices),
         )
         .addStringOption((option) =>
-            option.setName("reason").setDescription("Reason for the timeout"),
+            option.setName("reason").setDescription("סיבת ההשתקה"),
         )
-.setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
     category: "moderation",
 
     async execute(interaction, config, client) {
@@ -55,20 +55,20 @@ export default {
                 throw new TitanBotError(
                     "User lacks permission",
                     ErrorTypes.PERMISSION,
-                    "You need the `Moderate Members` permission to set a timeout."
+                    "דרושה הרשאת `ניהול חברים` (Moderate Members) כדי לבצע השתקה."
                 );
             }
 
             const targetUser = interaction.options.getUser("target");
             const member = interaction.options.getMember("target");
             const durationMinutes = interaction.options.getInteger("duration");
-            const reason = interaction.options.getString("reason") || "No reason provided";
+            const reason = interaction.options.getString("reason") || "לא צוינה סיבה";
 
             if (!targetUser) {
                 throw new TitanBotError(
                     'Missing target user',
                     ErrorTypes.USER_INPUT,
-                    'You must specify a user to timeout.',
+                    'עליך לציין משתמש כדי להשתיק אותו.',
                     { subtype: 'invalid_user' },
                 );
             }
@@ -77,21 +77,21 @@ export default {
                 throw new TitanBotError(
                     "Cannot timeout self",
                     ErrorTypes.VALIDATION,
-                    "You cannot timeout yourself."
+                    "אינך יכול להשתיק את עצמך."
                 );
             }
             if (targetUser.id === client.user.id) {
                 throw new TitanBotError(
                     "Cannot timeout bot",
                     ErrorTypes.VALIDATION,
-                    "You cannot timeout the bot."
+                    "אינך יכול להשתיק את הבוט."
                 );
             }
             if (!member) {
                 throw new TitanBotError(
                     "Target not found",
                     ErrorTypes.USER_INPUT,
-                    "The target user is not currently in this server."
+                    "המשתמש שצוין אינו נמצא בשרת כרגע."
                 );
             }
 
@@ -106,13 +106,13 @@ export default {
 
             const durationDisplay =
                 durationChoices.find((c) => c.value === durationMinutes)
-                    ?.name || `${durationMinutes} minutes`;
+                    ?.name || `${durationMinutes} דקות`;
 
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `⏳ **Timed out** ${targetUser.tag} for ${durationDisplay}.`,
-                        `**Reason:** ${reason}\n**Case ID:** #${result.caseId}`,
+                        `⏳ **בוצעה השתקה** ל-${targetUser.tag} למשך ${durationDisplay}.`,
+                        `**סיבה:** ${reason}\n**מזהה מקרה:** #${result.caseId}`,
                     ),
                 ],
             });
