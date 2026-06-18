@@ -4,52 +4,54 @@ import { botConfig } from '../bot.js';
 const { currency } = botConfig.economy;
 
 export const shopConfig = {
-    name: 'TitanBot Shop',
+    // שם החנות עודכן
+    name: 'Combo IL bot Shop',
     currency: currency.name,
     currencyName: currency.name,
-    currencyNamePlural: currency.namePlural || `${currency.name}s`,
-    currencySymbol: currency.symbol || '💵',
+    currencyNamePlural: currency.namePlural || `${currency.name}`,
+    currencySymbol: currency.symbol || '🪙',
     
+    // קטגוריות מתורגמות ומעוצבות
     categories: [
         {
             id: 'consumables',
-            name: 'Consumables',
-            description: 'One-time use items that provide temporary benefits',
+            name: '✨ חפצים מתכלים',
+            description: 'חפצים לשימוש חד-פעמי המעניקים שדרוגים זמניים',
             icon: '🍯',
             itemTypes: ['consumable']
         },
         {
             id: 'upgrades',
-            name: 'Upgrades',
-            description: 'Permanent upgrades that enhance your abilities',
+            name: '⚡ שדרוגים קבועים',
+            description: 'תוספות קבועות לחשבון המעצימות את היכולות שלך',
             icon: '⚡',
             itemTypes: ['upgrade']
         },
         {
             id: 'tools',
-            name: 'Tools',
-            description: 'Equipment that helps you gather resources more efficiently',
+            name: '⛏️ כלי עבודה',
+            description: 'ציוד עזר שיעזור לך להשיג משאבים בצורה יעילה ומהירה יותר',
             icon: '⛏️',
             itemTypes: ['tool']
         },
         {
             id: 'roles',
-            name: 'Roles',
-            description: 'Special roles with unique perks',
+            name: '🎭 רולים מיוחדים',
+            description: 'רולים ייחודיים לשרת שמגיעים עם פריבילגיות בלעדיות',
             icon: '🎭',
             itemTypes: ['role']
         }
     ],
     
     transaction: {
-cooldown: 1000,
-maxQuantity: 10,
-confirmTimeout: 30000,
+        cooldown: 1000,
+        maxQuantity: 10,
+        confirmTimeout: 30000,
         
         refundPolicy: {
             enabled: true,
-window: 300000,
-fee: 0.1
+            window: 300000,
+            fee: 0.1
         }
     },
     
@@ -60,19 +62,19 @@ fee: 0.1
         showAffordability: true,
         
         colors: {
-primary: '#5865F2',
-success: '#43B581',
-error: '#F04747',
-warning: '#FAA61A',
-info: '#00B0F4',
+            primary: '#5865F2',
+            success: '#43B581',
+            error: '#F04747',
+            warning: '#FAA61A',
+            info: '#00B0F4',
             
             rarity: {
-common: '#99AAB5',
-uncommon: '#2ECC71',
-rare: '#3498DB',
-epic: '#9B59B6',
-legendary: '#F1C40F',
-mythic: '#E74C3C'
+                common: '#99AAB5',
+                uncommon: '#2ECC71',
+                rare: '#3498DB',
+                epic: '#9B59B6',
+                legendary: '#F1C40F',
+                mythic: '#E74C3C'
             }
         },
         
@@ -92,21 +94,22 @@ mythic: '#E74C3C'
         }
     },
     
+    // הודעות מערכת צבעוניות לחנות
     events: {
         restock: {
             enabled: true,
-interval: 86400000,
-announcementChannel: null,
-            message: '🛒 **Shop Restocked!** New items are now available!'
+            interval: 86400000,
+            announcementChannel: null,
+            message: '🛒 **המלאי בחנות חודש!** פריטים חדשים זמינים כעת לרכישה! (נוצר ע״י שאמטיקינג 👑)'
         },
         
         sales: {
             enabled: true,
             schedule: [
                 {
-day: 0,
-discount: 0.2,
-                    message: '🔥 **Weekend Sale!** 20% off all items!'
+                    day: 0,
+                    discount: 0.2,
+                    message: '🔥 **מבצע סוף שבוע מטורף!** 20% הנחה על כל הפריטים בחנות של Combo IL bot!'
                 },
             ]
         }
@@ -141,7 +144,7 @@ export function getCurrentPrice(itemId, { quantity = 1, userData = null } = {}) 
         }
         
         if (quantity >= 10) {
-discount += 0.1;
+            discount += 0.1;
         }
     }
     
@@ -155,8 +158,8 @@ export function getCategoryForItem(itemType) {
         cat.itemTypes.includes(itemType)
     ) || {
         id: 'other',
-        name: 'Other',
-        description: 'Miscellaneous items',
+        name: '📦 אחר',
+        description: 'חפצים שונים ומגוונים',
         icon: '📦'
     };
 }
