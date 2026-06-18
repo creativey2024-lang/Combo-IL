@@ -16,19 +16,19 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("gcreate")
-        .setDescription("Starts a new giveaway in a specified channel.")
+        .setDescription("התחלת הגרלה חדשה בערוץ המבוקש.")
         .addStringOption((option) =>
             option
                 .setName("duration")
                 .setDescription(
-                    "How long the giveaway should last (e.g., 1h, 30m, 5d).",
+                    "משך זמן ההגרלה (לדוגמה: 1h עבור שעה, 30m עבור חצי שעה, 5d עבור 5 ימים).",
                 )
                 .setRequired(true),
         )
         .addIntegerOption((option) =>
             option
                 .setName("winners")
-                .setDescription("The number of winners to pick.")
+                .setDescription("מספר הזוכים שיעלו בגורל.")
                 .setMinValue(1)
                 .setMaxValue(10)
                 .setRequired(true),
@@ -36,13 +36,13 @@ export default {
         .addStringOption((option) =>
             option
                 .setName("prize")
-                .setDescription("The prize being given away.")
+                .setDescription("הפרס שיחולק בהגרלה.")
                 .setRequired(true),
         )
         .addChannelOption((option) =>
             option
                 .setName("channel")
-                .setDescription("The channel to send the giveaway to (defaults to current channel).")
+                .setDescription("הערוץ שבו תפורסם ההגרלה (ברירת המחדל היא הערוץ הנוכחי).")
                 .addChannelTypes(ChannelType.GuildText)
                 .setRequired(false),
         )
@@ -55,7 +55,7 @@ export default {
                 throw new TitanBotError(
                     'Giveaway command used outside guild',
                     ErrorTypes.VALIDATION,
-                    'This command can only be used in a server.',
+                    'ניתן להשתמש בפקודה זו בתוך שרתים בלבד.',
                     { userId: interaction.user.id }
                 );
             }
@@ -64,7 +64,7 @@ export default {
                 throw new TitanBotError(
                     'User lacks ManageGuild permission',
                     ErrorTypes.PERMISSION,
-                    "You need the 'Manage Server' permission to start a giveaway.",
+                    "אתה זקוק להרשאת 'ניהול שרת' כדי להתחיל הגרלה.",
                     { userId: interaction.user.id, guildId: interaction.guildId }
                 );
             }
@@ -84,7 +84,7 @@ export default {
                 throw new TitanBotError(
                     'Target channel is not text-based',
                     ErrorTypes.VALIDATION,
-                    'The channel must be a text channel.',
+                    'ערוץ היעד חייב להיות ערוץ טקסט תקין.',
                     { channelId: targetChannel.id, channelType: targetChannel.type }
                 );
             }
@@ -110,7 +110,7 @@ export default {
             const row = createGiveawayButtons(false);
 
             const giveawayMessage = await targetChannel.send({
-                content: "🎉 **NEW GIVEAWAY** 🎉",
+                content: "🎉 **הגרלה חדשה יצאה לדרך!** 🎉",
                 embeds: [embed],
                 components: [row],
             });
@@ -168,8 +168,8 @@ export default {
             await InteractionHelper.safeReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `Giveaway Started! 🎉`,
-                        `A new giveaway for **${prizeName}** has been started in ${targetChannel} and will end in **${durationString}**.`,
+                        `ההגרלה הופעלה! 🎉`,
+                        `הגרלה חדשה על **${prizeName}** הופעלה בהצלחה בערוץ ${targetChannel} ותסתיים בעוד **${durationString}**.`,
                     ),
                 ],
                 flags: MessageFlags.Ephemeral,
