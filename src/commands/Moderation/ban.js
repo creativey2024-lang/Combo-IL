@@ -5,41 +5,42 @@ import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { ModerationService } from '../../services/moderationService.js';
 import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("ban")
-        .setDescription("Ban a user from the server")
+        .setDescription("הרחקת (Ban) משתמש מהשרת")
         .addUserOption((option) =>
             option
                 .setName("target")
-                .setDescription("The user to ban")
+                .setDescription("המשתמש שברצונך להרחיק")
                 .setRequired(true),
         )
         .addStringOption((option) =>
-            option.setName("reason").setDescription("Reason for the ban"),
+            option.setName("reason").setDescription("הסיבה להרחקה"),
         )
-.setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     category: "moderation",
 
     async execute(interaction, config, client) {
         try {
             const user = interaction.options.getUser("target");
-            const reason = interaction.options.getString("reason") || "No reason provided";
+            const reason = interaction.options.getString("reason") || "לא צוינה סיבה";
 
             if (!user) {
                 throw new TitanBotError(
                     'Missing target user',
                     ErrorTypes.USER_INPUT,
-                    'You must specify a user to ban.',
+                    'עליך לציין משתמש כדי להרחיק אותו.',
                     { subtype: 'invalid_user' },
                 );
             }
 
             if (user.id === interaction.user.id) {
-                throw new Error("You cannot ban yourself.");
+                throw new Error("אתה לא יכול להרחיק את עצמך.");
             }
             if (user.id === client.user.id) {
-                throw new Error("You cannot ban the bot.");
+                throw new Error("אתה לא יכול להרחיק את הבוט.");
             }
 
             const result = await ModerationService.banUser({
@@ -52,8 +53,8 @@ export default {
             await InteractionHelper.universalReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `🚫 **Banned** ${user.tag}`,
-                        `**Reason:** ${reason}\n**Case ID:** #${result.caseId}`,
+                        `🚫 **הורחק בהצלחה:** ${user.tag}`,
+                        `**סיבה:** ${reason}\n**מזהה מקרה:** #${result.caseId}`,
                     ),
                 ],
             });
