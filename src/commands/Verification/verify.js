@@ -8,7 +8,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('verify')
-        .setDescription('Verify yourself and gain access to the server'),
+        .setDescription('אימות עצמי וקבלת גישה לערוצי השרת'),
 
     async execute(interaction, config, client) {
         const wrappedExecute = withErrorHandling(async () => {
@@ -22,18 +22,21 @@ export default {
             if (!result.success) {
                 if (result.alreadyVerified) {
                     return await InteractionHelper.safeReply(interaction, {
-                        embeds: [infoEmbed('Already Verified', "You are already verified.")],
+                        embeds: [infoEmbed('כבר מאומת', "אתה כבר מאומת בשרת זה.")],
                         flags: MessageFlags.Ephemeral
                     });
                 }
 
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred during verification. Please try again or contact an administrator.' });
+                return await replyUserError(interaction, { 
+                    type: ErrorTypes.UNKNOWN, 
+                    message: 'התרחשה שגיאה במהלך תהליך האימות. אנא נסו שוב או פנו להנהלת השרת.' 
+                });
             }
 
             await InteractionHelper.safeReply(interaction, {
                 embeds: [successEmbed(
-                    "Verification Complete",
-                    `You have been verified and given the **${result.roleName}** role! Welcome to the server! 🎉`
+                    "האימות הושלם בהצלחה",
+                    `אומתת בהצלחה וקיבלת את התפקיד **${result.roleName}**! ברוך הבא לשרת! 🎉`
                 )],
                 flags: MessageFlags.Ephemeral
             });
