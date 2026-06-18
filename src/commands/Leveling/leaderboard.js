@@ -2,12 +2,12 @@ import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
 import { logger } from '../../utils/logger.js';
 import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 import { getLeaderboard, getLevelingConfig, getXpForLevel } from '../../services/leveling.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
   data: new SlashCommandBuilder()
     .setName('leaderboard')
-    .setDescription("Shows the server's level leaderboard")
+    .setDescription("מציג את לוח המובילים (רמות) של השרת")
     .setDMPermission(false),
   category: 'Leveling',
 
@@ -22,7 +22,7 @@ export default {
           embeds: [
             new EmbedBuilder()
               .setColor('#f1c40f')
-              .setDescription('The leveling system is currently disabled on this server.')
+              .setDescription('מערכת הרמות מושבתת כרגע בשרת זה.')
           ],
           flags: MessageFlags.Ephemeral
         });
@@ -35,14 +35,14 @@ export default {
         throw new TitanBotError(
           'No leaderboard data found',
           ErrorTypes.DATABASE,
-          'No level data found yet. Start chatting to gain XP!'
+          'לא נמצאו נתוני רמות בשרת עדיין. התחילו להתכתב כדי להרוויח XP!'
         );
       }
 
       const embed = new EmbedBuilder()
-        .setTitle('Level Leaderboard')
+        .setTitle('🏆 לוח המובילים של השרת')
         .setColor('#2ecc71')
-        .setDescription("Top 10 most active members in this server:")
+        .setDescription("עשרת המשתמשים הפעילים ביותר בשרת זה:")
         .setTimestamp();
 
       const leaderboardText = await Promise.all(
@@ -58,15 +58,15 @@ export default {
             else if (index === 2) rankPrefix = '🥉';
             else rankPrefix = `**${index + 1}.**`;
 
-            return `${rankPrefix} ${userMention} - Level ${user.level} (${user.xp}/${xpForNextLevel} XP)`;
+            return `${rankPrefix} ${userMention} - רמה ${user.level} (${user.xp}/${xpForNextLevel} XP)`;
           } catch {
-            return `**${index + 1}.** Error loading user ${user.userId}`;
+            return `**${index + 1}.** שגיאה בטעינת משתמש ${user.userId}`;
           }
         })
       );
 
       embed.addFields({
-        name: 'Rankings',
+        name: 'דירוגים',
         value: leaderboardText.join('\n')
       });
 
