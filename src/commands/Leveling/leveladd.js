@@ -4,22 +4,22 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { checkUserPermissions } from '../../utils/permissionGuard.js';
 import { addLevels, getLevelingConfig } from '../../services/leveling.js';
 import { createEmbed } from '../../utils/embeds.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
   data: new SlashCommandBuilder()
     .setName('leveladd')
-    .setDescription('Add levels to a user')
+    .setDescription('הוספת רמות למשתמש בשרת')
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to add levels to')
+        .setDescription('המשתמש שברצונך להוסיף לו רמות')
         .setRequired(true)
     )
     .addIntegerOption((option) =>
       option
         .setName('levels')
-        .setDescription('Number of levels to add')
+        .setDescription('מספר הרמות שברצונך להוסיף')
         .setRequired(true)
         .setMinValue(1)
     )
@@ -34,7 +34,7 @@ export default {
       const hasPermission = await checkUserPermissions(
         interaction,
         PermissionFlagsBits.ManageGuild,
-        'You need ManageGuild permission to use this command.'
+        'אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בפקודה זו.'
       );
       if (!hasPermission) return;
 
@@ -44,7 +44,7 @@ export default {
           embeds: [
             new EmbedBuilder()
               .setColor('#f1c40f')
-              .setDescription('The leveling system is currently disabled on this server.')
+              .setDescription('מערכת הרמות מושבתת כרגע בשרת זה.')
           ],
           flags: MessageFlags.Ephemeral
         });
@@ -59,7 +59,7 @@ export default {
         throw new TitanBotError(
           `User ${targetUser.id} not found in this guild`,
           ErrorTypes.USER_INPUT,
-          'The specified user is not in this server.'
+          'המשתמש שצוין אינו נמצא בשרת זה.'
         );
       }
 
@@ -68,8 +68,8 @@ export default {
       await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'Levels Added',
-            description: `Successfully added ${levelsToAdd} levels to ${targetUser.tag}.\n**New Level:** ${userData.level}`,
+            title: '✨ רמות התווספו בהצלחה',
+            description: `התווספו בהצלחה ${levelsToAdd} רמות למשתמש ${targetUser.tag}.\n**הרמה החדשה:** ${userData.level}`,
             color: 'success'
           })
         ]
