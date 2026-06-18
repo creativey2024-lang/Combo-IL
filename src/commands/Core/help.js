@@ -59,8 +59,8 @@ export async function createInitialHelpMenu(client) {
 
     const options = [
         {
-            label: "📋 All Commands",
-            description: "Browse every available command in a single list",
+            label: "📋 כל הפקודות",
+            description: "עיון בכל הפקודות הזמינות של הבוט ברשימה אחת",
             value: ALL_COMMANDS_ID,
         },
         ...categoryDirs.map((category) => {
@@ -68,62 +68,63 @@ export async function createInitialHelpMenu(client) {
             const icon = CATEGORY_ICONS[categoryName] || "🔍";
             return {
                 label: `${icon} ${categoryName}`,
-                description: `View commands in the ${categoryName} category`,
+                description: `הצגת פקודות בקטגוריית ${categoryName}`,
                 value: category,
             };
         }),
     ];
 
-    const botName = client?.user?.username || "Bot";
+    const botName = client?.user?.username || "הבוט";
     const embed = createEmbed({
-        title: `📖 ${botName} Help`,
-        description: 'Set up your server, pick what to enable, then browse commands below.',
+        title: `📖 עזרה עבור ${botName}`,
+        description: 'הגדירו את השרת שלכם, בחרו אילו מערכות להפעיל, ועיינו ברשימת הפקודות למטה.',
         color: 'primary',
         thumbnail: client.user?.displayAvatarURL?.({ size: 1024 }),
         fields: [
             {
-                name: '🚀 Getting Started',
+                name: '🚀 איך מתחילים?',
                 value: [
-                    '**1. Launch setup** — Run `/configwizard` to configure prefix, mod role, and logs.',
-                    '**2. Enable systems** — Use `/commands dashboard` to turn categories on or off.',                    '**3. Browse commands** — Use the menu below to view categories and commands.',
+                    '**1. הרצת ההגדרה הראשונית** — השתמשו בפקודה \`/configwizard\` כדי להגדיר קידומת (Prefix), רול ניהול ויומני פעילות (Logs).',
+                    '**2. הפעלת מערכות** — השתמשו בפקודה \`/commands dashboard\` כדי להפעיל או לכבות קטגוריות ומערכות בשרת.',
+                    '**3. סקירת פקודות** — השתמשו בתפריט הבחירה למטה כדי לצפות בפקודות לפי קטגוריות.',
                 ].join('\n'),
                 inline: false,
             },
             {
-                name: 'ℹ️ How It Works',
+                name: 'ℹ️ איך זה עובד?',
                 value: [
-                    '• Dashboard commands manage each feature visually',
-                    '• Settings are saved per server',
-                    '• Slash commands and prefixes both work once enabled',
+                    '• פקודות הדשבורד מאפשרות לנהל כל מאפיין ומערכת בצורה ויזואלית ונוחה.',
+                    '• כל ההגדרות והשינויים נשמרים בנפרד עבור השרת שלכם.',
+                    '• פקודות סלאש (\`/\`) ופקודות טקסט רגילות יעבדו ברגע שהמערכת המתאימה תופעל.',
                 ].join('\n'),
                 inline: false,
             },
             {
                 name: '\u200B',
-                value: `-# ${botName} is [open source](https://youtu.be/1jCZX8s3bJE?si=NPOYx-vxVE1I5vJK)`,
+                value: `-# ${botName} הוא [קוד פתוח (Open Source)](https://youtu.be/1jCZX8s3bJE?si=NPOYx-vxVE1I5vJK)`,
                 inline: false,
             },
         ],
     });
 
     embed.setFooter({ 
-        text: "Made with ❤️" 
+        text: "נוצר באהבה ❤️" 
     });
     embed.setTimestamp();
 
     const bugReportButton = new ButtonBuilder()
         .setCustomId(BUG_REPORT_BUTTON_ID)
-        .setLabel("Report Bug")
+        .setLabel("דיווח על באג")
         .setStyle(ButtonStyle.Danger);
 
     const supportButton = new ButtonBuilder()
-        .setLabel("Support Server")
+        .setLabel("שרת התמיכה")
         .setURL("https://discord.gg/QnWNz2dKCE")
         .setStyle(ButtonStyle.Link);
 
     const selectRow = createSelectMenu(
         CATEGORY_SELECT_ID,
-        "Select to view the commands",
+        "בחר קטגוריה כדי לצפות בפקודות",
         options,
     );
 
@@ -142,7 +143,7 @@ export default {
     slashOnly: true,
     data: new SlashCommandBuilder()
         .setName("help")
-        .setDescription("Displays the help menu with all available commands"),
+        .setDescription("הצגת תפריט העזרה הראשי עם כל הפקודות הזמינות של הבוט"),
 
     async execute(interaction, guildConfig, client) {
         
@@ -156,6 +157,7 @@ export default {
             components,
         });
 
+        // טיימאאוט לסגירת התפריט לאחר חוסר פעילות
         setTimeout(async () => {
             try {
                 if (!InteractionHelper.isInteractionValid(interaction)) {
@@ -163,8 +165,8 @@ export default {
                 }
 
                 const closedEmbed = createEmbed({
-                    title: "Help menu closed",
-                    description: "Help menu has been closed, use /help again.",
+                    title: "תפריט העזרה נסגר",
+                    description: "תפריט העזרה נסגר עקב חוסר פעילות. אנא השתמשו בפקודה \`/help\` מחדש.",
                     color: "secondary",
                 });
 
