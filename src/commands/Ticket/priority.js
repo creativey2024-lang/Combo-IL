@@ -2,7 +2,7 @@ import { getColor } from '../../config/bot.js';
 import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
 import { successEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
-import { handleInteractionError } from '../../utils/errorHandler.js';
+import { handleInteractionError, replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { getTicketPermissionContext } from '../../utils/ticketPermissions.js';
 import { updateTicketPriority } from '../../services/ticket.js';
@@ -10,18 +10,18 @@ import { updateTicketPriority } from '../../services/ticket.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("priority")
-        .setDescription("Sets the priority level for the current support ticket.")
+        .setDescription("הגדרת רמת העדיפות של הטיקט הנוכחי")
         .addStringOption((option) =>
             option
                 .setName("level")
-                .setDescription("The priority level for the ticket.")
+                .setDescription("רמת העדיפות לטיקט")
                 .setRequired(true)
                 .addChoices(
-                    { name: "Urgent", value: "urgent" },
-                    { name: "High", value: "high" },
-                    { name: "Medium", value: "medium" },
-                    { name: "Low", value: "low" },
-                    { name: "None", value: "none" },
+                    { name: "דחוף (Urgent)", value: "urgent" },
+                    { name: "גבוהה (High)", value: "high" },
+                    { name: "בינונית (Medium)", value: "medium" },
+                    { name: "נמוכה (Low)", value: "low" },
+                    { name: "ללא (None)", value: "none" },
                 ),
             )
         .setDMPermission(false),
@@ -29,7 +29,6 @@ export default {
 
     async execute(interaction, guildConfig, client) {
         try {
-            
             const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
             if (!deferred) {
                 return;
@@ -37,11 +36,11 @@ export default {
 
             const permissionContext = await getTicketPermissionContext({ client, interaction });
             if (!permissionContext.ticketData) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'This command can only be used in a valid ticket channel.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'ניתן להשתמש בפקודה זו רק בתוך ערוץ טיקט תקין.' });
             }
 
             if (!permissionContext.canManageTicket) {
-                return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the `Manage Channels` permission or the configured `Ticket Staff Role` to change ticket priority.' });
+                return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'דרושה הרשאת `Manage Channels` (ניהול ערוצים) או תפקיד צוות טיקטים מוגדר כדי לשנות עדיפות טיקט.' });
             }
 
             const priorityLevel = interaction.options.getString("level");
@@ -54,14 +53,14 @@ export default {
                     guildId: interaction.guildId,
                     error: result.error
                 });
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'result.error || "This command can only be used in a valid ticket channel."' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: result.error || "לא ניתן לעדכן את העדיפות בטיקט זה." });
             }
 
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        "Priority Updated",
-                        `Ticket priority set to **${priorityLevel.toUpperCase()}**.`,
+                        "העדיפות עודכנה",
+                        `עדיפות הטיקט הוגדרה ל-**${priorityLevel.toUpperCase()}**.`,
                     ),
                 ],
             });
