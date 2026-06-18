@@ -9,40 +9,41 @@ import { handleUpdate } from './modules/serverstats_update.js';
 import { handleDelete } from './modules/serverstats_delete.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("serverstats")
-        .setDescription("Manage server statistics that track member counts and channel data")
+        .setDescription("ניהול נתוני שרת (ספירת חברים וערוצים)")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
         .addSubcommand(subcommand =>
             subcommand
                 .setName("create")
-                .setDescription("Create a new statistics tracker channel in a category")
+                .setDescription("יצירת ערוץ חדש למעקב אחר נתוני השרת")
                 .addStringOption(option =>
                     option
                         .setName("type")
-                        .setDescription("The type of statistics to track")
+                        .setDescription("סוג הנתונים למעקב")
                         .setRequired(true)
                         .addChoices(
-                            { name: "members + bots", value: "members" },
-                            { name: "members only", value: "members_only" },
-                            { name: "bots only", value: "bots" }
+                            { name: "חברים + בוטים", value: "members" },
+                            { name: "חברים בלבד", value: "members_only" },
+                            { name: "בוטים בלבד", value: "bots" }
                         )
                 )
                 .addStringOption(option =>
                     option
                         .setName("channel_type")
-                        .setDescription("The channel type to create for this tracker")
+                        .setDescription("סוג הערוץ ליצירה")
                         .setRequired(true)
                         .addChoices(
-                            { name: "voice channel (recommended)", value: "voice" },
-                            { name: "text channel", value: "text" }
+                            { name: "ערוץ קולי (מומלץ)", value: "voice" },
+                            { name: "ערוץ טקסט", value: "text" }
                         )
                 )
                 .addChannelOption(option =>
                     option
                         .setName("category")
-                        .setDescription("The category where the statistics tracker channel will be created")
+                        .setDescription("הקטגוריה שבה ייווצר ערוץ המעקב")
                         .setRequired(true)
                         .addChannelTypes(ChannelType.GuildCategory)
                 )
@@ -50,38 +51,38 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName("list")
-                .setDescription("List all statistics trackers for this server")
+                .setDescription("הצגת רשימת כל ערוצי המעקב בשרת")
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("update")
-                .setDescription("Update an existing statistics tracker")
+                .setDescription("עדכון ערוץ מעקב קיים")
                 .addStringOption(option =>
                     option
                         .setName("counter-id")
-                        .setDescription("The ID of the tracker to update")
+                        .setDescription("מזהה (ID) של הערוץ לעדכון")
                         .setRequired(true)
                 )
                 .addStringOption(option =>
                     option
                         .setName("type")
-                        .setDescription("The new tracker type")
+                        .setDescription("סוג המעקב החדש")
                         .setRequired(false)
                         .addChoices(
-                            { name: "members + bots", value: "members" },
-                            { name: "members only", value: "members_only" },
-                            { name: "bots only", value: "bots" }
+                            { name: "חברים + בוטים", value: "members" },
+                            { name: "חברים בלבד", value: "members_only" },
+                            { name: "בוטים בלבד", value: "bots" }
                         )
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("delete")
-                .setDescription("Delete an existing statistics tracker")
+                .setDescription("מחיקת ערוץ מעקב קיים")
                 .addStringOption(option =>
                     option
                         .setName("counter-id")
-                        .setDescription("The ID of the tracker to delete")
+                        .setDescription("מזהה (ID) של הערוץ למחיקה")
                         .setRequired(true)
                 )
         ),
@@ -104,14 +105,14 @@ export default {
                     await handleDelete(interaction, client);
                     break;
                 default:
-                    await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Unknown subcommand.' });
+                    await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'פקודת משנה לא מוכרת.' });
             }
         } catch (error) {
             logger.error(`Error in serverstats ${subcommand}:`, error);
             
             const errorEmbedMsg = createEmbed({ 
-                title: "❌ Error", 
-                description: "An error occurred while processing your request.",
+                title: "❌ שגיאה", 
+                description: "אירעה שגיאה בעת עיבוד הבקשה שלך.",
                 color: getColor('error')
             });
 
