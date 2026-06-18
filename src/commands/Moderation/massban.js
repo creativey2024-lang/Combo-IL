@@ -4,27 +4,27 @@ import { logModerationAction } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { ModerationService } from '../../services/moderationService.js';
 import { TitanBotError } from '../../utils/errorHandler.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("massban")
-        .setDescription("Ban multiple users from the server at once")
+        .setDescription("הרחקת מספר משתמשים מהשרת בבת אחת")
         .addStringOption(option =>
             option
                 .setName("users")
-                .setDescription("User IDs or mentions to ban (separated by spaces or commas)")
+                .setDescription("מזהי משתמשים (IDs) או אזכורים להרחקה (מופרדים על ידי רווחים או פסיקים)")
                 .setRequired(true)
         )
         .addStringOption(option =>
             option.setName("reason")
-                .setDescription("Reason for the mass ban")
+                .setDescription("הסיבה להרחקה המרוכזת")
                 .setRequired(false)
         )
         .addIntegerOption(option =>
             option
                 .setName("delete_days")
-                .setDescription("Number of days of messages to delete (0-7)")
+                .setDescription("מספר ימי ההודעות למחיקה (0-7)")
                 .setMinValue(0)
                 .setMaxValue(7)
                 .setRequired(false)
@@ -45,30 +45,30 @@ export default {
         }
 
         if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You do not have permission to ban members.' });
+            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'אין לך הרשאה להרחיק חברים מהשרת.' });
         }
 
         const usersInput = interaction.options.getString("users");
-        const reason = interaction.options.getString("reason") || "Mass ban - No reason provided";
+        const reason = interaction.options.getString("reason") || "הרחקה מרוכזת - לא צוינה סיבה";
         const deleteDays = interaction.options.getInteger("delete_days") || 0;
 
         try {
             const userIds = usersInput
-.replace(/<@!?(\d+)>/g, '$1')
-.split(/[\s,]+/)
-.filter(id => id && /^\d+$/.test(id))
-.slice(0, 20);
+                .replace(/<@!?(\d+)>/g, '$1')
+                .split(/[\s,]+/)
+                .filter(id => id && /^\d+$/.test(id))
+                .slice(0, 20);
 
             if (userIds.length === 0) {
-                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'Please provide valid user IDs or mentions. Maximum 20 users at once.' });
+                return await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: 'אנא ציין מזהי משתמשים תקינים או אזכורים. ניתן להרחיק עד 20 משתמשים בו-זמנית.' });
             }
 
             if (userIds.includes(interaction.user.id)) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You cannot include yourself in a mass ban.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'אינך יכול לכלול את עצמך בהרחקה מרוכזת.' });
             }
 
             if (userIds.includes(client.user.id)) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You cannot include the bot in a mass ban.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'אינך יכול לכלול את הבוט בהרחקה מרוכזת.' });
             }
 
             const results = {
@@ -82,7 +82,7 @@ export default {
                     const user = await client.users.fetch(userId).catch(() => null);
                     
                     if (!user) {
-                        results.failed.push({ userId, reason: "User not found" });
+                        results.failed.push({ userId, reason: "המשתמש לא נמצא" });
                         continue;
                     }
 
@@ -127,7 +127,7 @@ export default {
                             action: "Member Banned",
                             target: `${user.tag} (${user.id})`,
                             executor: `${interaction.user.tag} (${interaction.user.id})`,
-                            reason: `${reason} (Mass Ban)`,
+                            reason: `${reason} (הרחקה מרוכזת)`,
                             metadata: {
                                 userId: user.id,
                                 moderatorId: interaction.user.id,
@@ -141,7 +141,7 @@ export default {
                     logger.error(`Failed to ban user ${userId}:`, error);
                     const reason = error instanceof TitanBotError
                         ? (error.userMessage || error.message)
-                        : (error.message || "Unknown error");
+                        : (error.message || "שגיאה לא ידועה");
                     results.failed.push({ 
                         userId, 
                         reason,
@@ -149,10 +149,10 @@ export default {
                 }
             }
 
-            let description = `**Mass Ban Results:**\n\n`;
+            let description = `**תוצאות ההרחקה המרוכזת:**\n\n`;
             
             if (results.successful.length > 0) {
-                description += `✅ **Successfully Banned (${results.successful.length}):**\n`;
+                description += `✅ **הורחקו בהצלחה (${results.successful.length}):**\n`;
                 results.successful.forEach(result => {
                     description += `• ${result.user} (${result.userId})\n`;
                 });
@@ -160,7 +160,7 @@ export default {
             }
 
             if (results.skipped.length > 0) {
-                description += `⚠️ **Skipped (${results.skipped.length}):**\n`;
+                description += `⚠️ **דלגו עליהם (${results.skipped.length}):**\n`;
                 results.skipped.forEach(result => {
                     description += `• ${result.user} - ${result.reason}\n`;
                 });
@@ -168,7 +168,7 @@ export default {
             }
 
             if (results.failed.length > 0) {
-                description += `❌ **Failed (${results.failed.length}):**\n`;
+                description += `❌ **נכשלו (${results.failed.length}):**\n`;
                 results.failed.forEach(result => {
                     description += `• ${result.userId} - ${result.reason}\n`;
                 });
@@ -179,7 +179,7 @@ export default {
             return await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     embed(
-                        `🔨 Mass Ban Completed`,
+                        `🔨 הרחקה מרוכזת הושלמה`,
                         description
                     )
                 ]
@@ -187,7 +187,7 @@ export default {
 
         } catch (error) {
             logger.error("Error in massban command:", error);
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while processing the mass ban. Please try again later.' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'אירעה שגיאה בעת עיבוד ההרחקה המרוכזת. אנא נסה שנית מאוחר יותר.' });
         }
     }
 };
