@@ -6,15 +6,16 @@ import { logger } from '../../utils/logger.js';
 import { WarningService } from '../../services/warningService.js';
 import { handleInteractionError } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("warnings")
-        .setDescription("View all warnings for a user")
+        .setDescription("צפייה בכל האזהרות של משתמש")
         .addUserOption((o) =>
             o
                 .setName("target")
                 .setRequired(true)
-                .setDescription("User to check warnings for"),
+                .setDescription("המשתמש שעבורו תרצה לבדוק אזהרות"),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
     category: "moderation",
@@ -41,8 +42,8 @@ export default {
                 await InteractionHelper.safeEditReply(interaction, {
                     embeds: [
                         createEmbed({ 
-                            title: `Warnings: ${target.tag}`, 
-                            description: "This user has no recorded warnings." 
+                            title: `אזהרות: ${target.tag}`, 
+                            description: "למשתמש זה אין אזהרות רשומות." 
                         }).setColor(getColor('success')),
                     ],
                 });
@@ -50,16 +51,16 @@ export default {
             }
 
             const embed = createEmbed({ 
-                title: `Warnings: ${target.tag}`, 
-                description: `Total Warnings: **${totalWarns}**` 
+                title: `אזהרות: ${target.tag}`, 
+                description: `סך הכל אזהרות: **${totalWarns}**` 
             }).setColor(getColor('warning'));
 
             const warningFields = validWarnings
                 .map((w, i) => {
                     const discordTimestamp = Math.floor(w.timestamp / 1000);
                     return {
-                        name: `[#${i + 1}] Reason: ${w.reason.substring(0, 100)}`,
-                        value: `**Moderator:** <@${w.moderatorId}>\n**Date:** <t:${discordTimestamp}:F> (<t:${discordTimestamp}:R>)`,
+                        name: `[#${i + 1}] סיבה: ${w.reason.substring(0, 100)}`,
+                        value: `**מנהל:** <@${w.moderatorId}>\n**תאריך:** <t:${discordTimestamp}:F> (<t:${discordTimestamp}:R>)`,
                         inline: false,
                     };
                 })
@@ -70,11 +71,11 @@ export default {
             const actionRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId(`warning_delete_specific:${target.id}:${interaction.user.id}`)
-                    .setLabel('Delete Specific Warning')
+                    .setLabel('מחק אזהרה ספציפית')
                     .setStyle(ButtonStyle.Danger),
                 new ButtonBuilder()
                     .setCustomId(`warning_clear_all:${target.id}:${interaction.user.id}`)
-                    .setLabel('Clear All Warnings')
+                    .setLabel('מחק את כל האזהרות')
                     .setStyle(ButtonStyle.Danger)
             );
 
@@ -85,7 +86,7 @@ export default {
                     action: "Warnings Viewed",
                     target: `${target.tag} (${target.id})`,
                     executor: `${interaction.user.tag} (${interaction.user.id})`,
-                    reason: `Viewed ${totalWarns} warnings`,
+                    reason: `צפייה ב-${totalWarns} אזהרות`,
                     metadata: {
                         userId: target.id,
                         moderatorId: interaction.user.id,
