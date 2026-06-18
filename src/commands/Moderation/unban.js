@@ -5,19 +5,20 @@ import { logger } from '../../utils/logger.js';
 import { ModerationService } from '../../services/moderationService.js';
 import { handleInteractionError } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("unban")
-        .setDescription("Unban a user from the server")
+        .setDescription("ביטול הרחקה (Unban) של משתמש מהשרת")
         .addUserOption(option =>
             option
                 .setName("target")
-                .setDescription("The user to unban (can be ID or mention)")
+                .setDescription("המשתמש לביטול הרחקה (ניתן להשתמש ב-ID או אזכור)")
                 .setRequired(true)
         )
         .addStringOption(option =>
             option.setName("reason")
-                .setDescription("Reason for the unban")
+                .setDescription("סיבה לביטול ההרחקה")
                 .setRequired(false)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
@@ -35,24 +36,24 @@ export default {
         }
 
         try {
-                const targetUser = interaction.options.getUser("target");
-                const reason = interaction.options.getString("reason") || "No reason provided";
+            const targetUser = interaction.options.getUser("target");
+            const reason = interaction.options.getString("reason") || "לא צוינה סיבה";
 
-                const result = await ModerationService.unbanUser({
-                    guild: interaction.guild,
-                    user: targetUser,
-                    moderator: interaction.member,
-                    reason
-                });
+            const result = await ModerationService.unbanUser({
+                guild: interaction.guild,
+                user: targetUser,
+                moderator: interaction.member,
+                reason
+            });
 
-                await InteractionHelper.safeEditReply(interaction, {
-                    embeds: [
-                        successEmbed(
-                            "✅ User Unbanned",
-                            `Successfully unbanned **${targetUser.tag}** from the server.\n\n**Reason:** ${reason}\n**Case ID:** #${result.caseId}`
-                        )
-                    ]
-                });
+            await InteractionHelper.safeEditReply(interaction, {
+                embeds: [
+                    successEmbed(
+                        "✅ ביטול הרחקה בוצע",
+                        `בוטלה ההרחקה של **${targetUser.tag}** מהשרת בהצלחה.\n\n**סיבה:** ${reason}\n**מזהה מקרה:** #${result.caseId}`
+                    )
+                ]
+            });
         } catch (error) {
             logger.error('Unban command error:', error);
             await handleInteractionError(interaction, error, { subtype: 'unban_failed' });
