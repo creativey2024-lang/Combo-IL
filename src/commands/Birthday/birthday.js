@@ -14,15 +14,15 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('birthday')
-        .setDescription('Birthday system commands')
+        .setDescription('פקודות ומערכת ימי הולדת')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('set')
-                .setDescription('Set your birthday')
+                .setDescription('הגדר את תאריך יום ההולדת שלך')
                 .addIntegerOption(option =>
                     option
                         .setName('month')
-                        .setDescription('Birth month (1-12)')
+                        .setDescription('חודש הלידה שלך (1-12)')
                         .setRequired(true)
                         .setMinValue(1)
                         .setMaxValue(12)
@@ -30,7 +30,7 @@ export default {
                 .addIntegerOption(option =>
                     option
                         .setName('day')
-                        .setDescription('Birth day (1-31)')
+                        .setDescription('יום הלידה שלך (1-31)')
                         .setRequired(true)
                         .setMinValue(1)
                         .setMaxValue(31)
@@ -39,37 +39,37 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('info')
-                .setDescription('View birthday information')
+                .setDescription('הצגת פרטי יום הולדת של משתמש')
                 .addUserOption(option =>
                     option
                         .setName('user')
-                        .setDescription('User to check birthday for')
+                        .setDescription('המשתמש שברצונך לבדוק את יום ההולדת שלו')
                         .setRequired(false)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('list')
-                .setDescription('List all birthdays in the server')
+                .setDescription('הצג את רשימת כל ימי ההולדת בשרת זה')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('remove')
-                .setDescription('Remove your birthday')
+                .setDescription('מחק את יום ההולדת שלך מהמערכת')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('next')
-                .setDescription('Show upcoming birthdays')
+                .setDescription('הצג את ימי ההולדת הקרובים ביותר בשרת')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setchannel')
-                .setDescription('Set or disable the channel for birthday announcements. (Manage Server required)')
+                .setDescription('הגדר או כבה את ערוץ הכרזות ימי ההולדת (דורש הרשאת ניהול שרת)')
                 .addChannelOption(option =>
                     option
                         .setName('channel')
-                        .setDescription('The text channel for announcements. Leave empty to disable.')
+                        .setDescription('ערוץ הטקסט שבו יפורסמו ההכרזות. השאר ריק כדי לבטל.')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(false)
                 )
@@ -93,7 +93,7 @@ export default {
                 case 'setchannel':
                     return await birthdaySetchannel.execute(interaction, config, client);
                 default:
-                    return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Unknown subcommand' });
+                    return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'תת-פקודה לא מוכרת' });
             }
         } catch (error) {
             logger.error('Birthday command execution failed', {
