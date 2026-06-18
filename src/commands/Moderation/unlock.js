@@ -3,15 +3,15 @@ import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/
 import { logEvent } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { getColor } from '../../config/bot.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("unlock")
         .setDescription(
-            "Unlocks the current channel (allows @everyone to send messages again).",
+            "משחרר את נעילת הערוץ הנוכחי (מאפשר ל-@everyone לשלוח הודעות שוב).",
         )
-.setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
     category: "moderation",
 
     async execute(interaction, config, client) {
@@ -30,7 +30,7 @@ export default {
                 PermissionFlagsBits.ManageChannels,
             )
         )
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the `Manage Channels` permission to unlock channels.' });
+            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'דרושה הרשאת `ניהול ערוצים` כדי לשחרר נעילת ערוצים.' });
 
         const channel = interaction.channel;
         const everyoneRole = interaction.guild.roles.everyone;
@@ -43,7 +43,7 @@ export default {
                 currentPermissions.has(PermissionFlagsBits.SendMessages) ===
                     null
             ) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: '${channel} is not explicitly locked (everyone can already send messages).' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `${channel} אינו נעול במפורש (כולם כבר יכולים לשלוח הודעות).` });
             }
 
             await channel.permissionOverwrites.edit(
@@ -51,27 +51,27 @@ export default {
                 { SendMessages: true },
                 {
                     type: 0,
-                    reason: `Channel unlocked by ${interaction.user.tag}`,
-},
+                    reason: `הנעילה שוחררה על ידי ${interaction.user.tag}`,
+                },
             );
 
-            const unlockEmbed = createEmbed(
-                "🔓 Channel Unlocked (Action Log)",
-                `${channel} has been unlocked by ${interaction.user}.`,
-            )
-.setColor(getColor('success'))
-                .addFields(
-                    {
-                        name: "Channel",
-                        value: channel.toString(),
-                        inline: true,
-                    },
-                    {
-                        name: "Moderator",
-                        value: `${interaction.user.tag} (${interaction.user.id})`,
-                        inline: true,
-                    },
-                );
+            const unlockEmbed = createEmbed({
+                title: "🔓 ערוץ שוחרר (יומן פעילות)",
+                description: `הנעילה של ${channel} שוחררה על ידי ${interaction.user}.`,
+            })
+            .setColor(getColor('success'))
+            .addFields(
+                {
+                    name: "ערוץ",
+                    value: channel.toString(),
+                    inline: true,
+                },
+                {
+                    name: "מנהל",
+                    value: `${interaction.user.tag} (${interaction.user.id})`,
+                    inline: true,
+                },
+            );
 
             await logEvent({
                 client,
@@ -82,7 +82,7 @@ export default {
                     executor: `${interaction.user.tag} (${interaction.user.id})`,
                     metadata: {
                         channelId: channel.id,
-                        category: channel.parent?.name || 'None'
+                        category: channel.parent?.name || 'ללא'
                     }
                 }
             });
@@ -90,14 +90,14 @@ export default {
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `🔓 **Channel Unlocked**`,
-                        `${channel} is now unlocked. You may speak now.`,
+                        `🔓 **ערוץ שוחרר**`,
+                        `${channel} פתוח כעת לכתיבה. ניתן להמשיך לדבר.`,
                     ),
                 ],
             });
         } catch (error) {
             logger.error('Unlock command error:', error);
-            await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'An unexpected error occurred while trying to unlock the channel. Check my permissions (I need \'Manage Channels\').' });
+            await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'אירעה שגיאה בלתי צפויה בעת ניסיון שחרור נעילת הערוץ. בדוק את ההרשאות שלי (דרושה הרשאת \'ניהול ערוצים\').' });
         }
     }
 };
