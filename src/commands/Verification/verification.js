@@ -12,35 +12,35 @@ import verificationDashboard from './modules/verification_dashboard.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("verification")
-        .setDescription("Manage the server verification system")
+        .setDescription("ניהול מערכת האימות (Verification) של השרת")
         .addSubcommand(subcommand =>
             subcommand
                 .setName("setup")
-                .setDescription("Set up the verification system")
+                .setDescription("הגדרת מערכת אימות חדשה")
                 .addChannelOption(option =>
                     option
                         .setName("verification_channel")
-                        .setDescription("Channel where verification messages will be sent")
+                        .setDescription("הערוץ שבו תישלח הודעת האימות")
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true)
                 )
                 .addRoleOption(option =>
                     option
                         .setName("verified_role")
-                        .setDescription("Role to give to verified users")
+                        .setDescription("התפקיד שיינתן למשתמשים שיאמתו את עצמם")
                         .setRequired(true)
                 )
                 .addStringOption(option =>
                     option
                         .setName("message")
-                        .setDescription("Custom verification message")
+                        .setDescription("הודעת אימות מותאמת אישית")
                         .setMaxLength(2000)
                         .setRequired(false)
                 )
                 .addStringOption(option =>
                     option
                         .setName("button_text")
-                        .setDescription("Text for the verification button")
+                        .setDescription("הטקסט שיופיע על כפתור האימות")
                         .setMaxLength(80)
                         .setRequired(false)
                 )
@@ -48,18 +48,18 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName("remove")
-                .setDescription("Remove verification from a user")
+                .setDescription("הסרת אימות ממשתמש מסוים")
                 .addUserOption(option =>
                     option
                         .setName("user")
-                        .setDescription("User to remove verification from")
+                        .setDescription("המשתמש שברצונכם להסיר ממנו את האימות")
                         .setRequired(true)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("dashboard")
-                .setDescription("Open the verification system configuration dashboard")
+                .setDescription("פתיחת לוח הבקרה (Dashboard) של מערכת האימות")
         ),
 
     async execute(interaction, config, client) {
@@ -71,7 +71,7 @@ export default {
                 throw createError(
                     'Missing ManageGuild permission for verification admin subcommand',
                     ErrorTypes.PERMISSION,
-                    'You need the **Manage Server** permission to use this verification subcommand.',
+                    'אתה זקוק להרשאת **ניהול שרת** (Manage Server) כדי להשתמש בפקודה זו.',
                     { subcommand, requiredPermission: 'ManageGuild', userId: interaction.user.id }
                 );
             }
@@ -87,7 +87,7 @@ export default {
                     throw createError(
                         `Unknown subcommand: ${subcommand}`,
                         ErrorTypes.VALIDATION,
-                        "Please select a valid subcommand.",
+                        "אנא בחרו בתת-פקודה תקינה.",
                         { subcommand }
                     );
             }
@@ -108,7 +108,7 @@ async function handleSetup(interaction, guild, client) {
         throw createError(
             'Bot member not found in guild cache',
             ErrorTypes.CONFIGURATION,
-            'I could not verify my permissions in this server. Please try again in a moment.',
+            'לא הצלחתי לאמת את ההרשאות שלי בשרת זה. אנא נסו שוב בעוד רגע.',
             { guildId: guild.id }
         );
     }
@@ -126,7 +126,7 @@ async function handleSetup(interaction, guild, client) {
         throw createError(
             `Missing channel permissions: ${missingChannelPerms.join(', ')}`,
             ErrorTypes.PERMISSION,
-            'I need **View Channel**, **Send Messages**, and **Embed Links** in the verification channel.',
+            'אני זקוק להרשאות **צפייה בערוץ**, **שליחת הודעות** ו-**הטמעת קישורים** (Embed Links) בערוץ האימות שנבחר.',
             { missingPermissions: missingChannelPerms, channel: verificationChannel.id }
         );
     }
@@ -135,7 +135,7 @@ async function handleSetup(interaction, guild, client) {
         throw createError(
             "Missing ManageRoles permission",
             ErrorTypes.PERMISSION,
-            "I need the 'Manage Roles' permission to give verified roles.",
+            "אני זקוק להרשאת 'ניהול תפקידים' (Manage Roles) כדי להעניק את תפקיד המאומת.",
             { missingPermission: "ManageRoles" }
         );
     }
@@ -144,7 +144,7 @@ async function handleSetup(interaction, guild, client) {
         throw createError(
             'Invalid verified role selected',
             ErrorTypes.VALIDATION,
-            'Please choose a normal assignable role (not @everyone or an integration-managed role).',
+            'אנא בחרו בתפקיד רגיל הניתן להענקה (לא תפקיד @everyone או תפקיד המנוהל על ידי בוט/אינטגרציה).',
             { roleId: verifiedRole.id, managed: verifiedRole.managed }
         );
     }
@@ -154,7 +154,7 @@ async function handleSetup(interaction, guild, client) {
         throw createError(
             "Role hierarchy error",
             ErrorTypes.PERMISSION,
-            "The verified role must be below my highest role in the server role hierarchy.",
+            "תפקיד המאומת חייב להיות מתחת לתפקיד הגבוה ביותר שלי בהיררכיית התפקידים של השרת.",
             { rolePosition: verifiedRole.position, botRolePosition: botRole.position }
         );
     }
@@ -168,7 +168,7 @@ async function handleSetup(interaction, guild, client) {
         throw createError(
             'Verification setup blocked by conflicting onboarding system',
             ErrorTypes.CONFIGURATION,
-            'You cannot enable the verification system while **AutoVerify** or **AutoRole** is configured. Disable those first.',
+            'לא ניתן להפעיל את מערכת האימות כאשר מערכת ה-**AutoVerify** או ה-**AutoRole** מוגדרות בשרת. יש להשבית אותן תחילה.',
             {
                 guildId: guild.id,
                 hasAutoVerifyEnabled,
@@ -182,7 +182,7 @@ async function handleSetup(interaction, guild, client) {
     await InteractionHelper.safeDefer(interaction);
 
     const verifyEmbed = createEmbed({
-        title: "Server Verification",
+        title: "אימות שרת (Verification)",
         description: message,
         color: getColor('success')
     });
@@ -213,11 +213,11 @@ async function handleSetup(interaction, guild, client) {
 
     await InteractionHelper.safeEditReply(interaction, {
         embeds: [successEmbed(
-            'Verification System Updated',
+            'מערכת האימות עודכנה בהצלחה',
             [
-                `Channel: ${verificationChannel}`,
-                `Verified Role: ${verifiedRole}`,
-                `Button Text: ${buttonText}`
+                `**ערוץ:** ${verificationChannel}`,
+                `**תפקיד מאומת:** ${verifiedRole}`,
+                `**טקסט כפתור:** ${buttonText}`
             ].join('\n')
         )]
     });
@@ -235,7 +235,7 @@ async function handleRemove(interaction, guild, client) {
         if (!result.success) {
             if (result.notVerified) {
                 return await InteractionHelper.safeReply(interaction, {
-                    embeds: [infoEmbed('Not Verified', `${targetUser.tag} does not currently have the verified role.`)],
+                    embeds: [infoEmbed('אינו מאומת', `למשתמש ${targetUser.tag} אין כרגע את תפקיד המאומת בשרת.`)],
                     flags: MessageFlags.Ephemeral
                 });
             }
@@ -248,7 +248,7 @@ async function handleRemove(interaction, guild, client) {
         });
 
         return await InteractionHelper.safeReply(interaction, {
-            embeds: [successEmbed('Verification Removed', `Verification removed from ${targetUser.tag}.`)]
+            embeds: [successEmbed('האימות הוסר', `האימות הוסר בהצלחה מהמשתמש ${targetUser.tag}.`)]
         });
 
     } catch (error) {
