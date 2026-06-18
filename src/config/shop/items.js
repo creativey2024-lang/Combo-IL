@@ -1,12 +1,12 @@
 export const shopItems = [
     {
         id: 'extra_work',
-        name: 'Extra Work Shift',
+        name: '👔 משמרת עבודה נוספת',
         price: 5000,
-        description: 'Allows 1 extra use of the `/work` command.',
+        description: 'מאפשר שימוש אחד נוסף בפקודה `/work`.',
         type: 'consumable',
         maxQuantity: 5,
-cooldown: 86400000,
+        cooldown: 86400000,
         effect: {
             type: 'command_boost',
             command: 'work',
@@ -15,9 +15,9 @@ cooldown: 86400000,
     },
     {
         id: 'bank_upgrade_1',
-        name: 'Bank Upgrade I',
+        name: '🏦 שדרוג הבנק I',
         price: 15000,
-        description: 'Increases bank capacity and allows more funds to be deposited.',
+        description: 'מגדיל את קיבולת הבנק ומאפשר להפקיד סכומי כסף גדולים יותר.',
         type: 'upgrade',
         maxLevel: 5,
         effect: {
@@ -27,9 +27,9 @@ cooldown: 86400000,
     },
     {
         id: 'diamond_pickaxe',
-        name: 'Diamond Pickaxe',
+        name: '💎 מכוש יהלום',
         price: 50000,
-        description: 'Increases yield from `/mine`',
+        description: 'מגדיל משמעותית את כמות המשאבים שמקבלים מהפקודה `/mine`.',
         type: 'tool',
         durability: 100,
         effect: {
@@ -39,11 +39,11 @@ cooldown: 86400000,
     },
     {
         id: 'premium_role',
-        name: 'Premium Server Role',
+        name: '👑 רול פרימיום לשרת',
         price: 15000,
-        description: 'A special role granting a fancy color and a 10% daily bonus.',
+        description: 'רול מיוחד המעניק צבע ייחודי ותוספת של 10% לבונוס היומי שלך.',
         type: 'role',
-roleId: null,
+        roleId: null,
         effect: {
             type: 'daily_bonus',
             multiplier: 1.1
@@ -51,9 +51,9 @@ roleId: null,
     },
     {
         id: 'lucky_clover',
-        name: 'Lucky Clover',
+        name: '🍀 תלתן מזל',
         price: 10000,
-        description: 'Increases the chance of winning a higher payout on `/gamble` once.',
+        description: 'מגדיל חד-פעמית את הסיכוי לזכות בפרס גבוה יותר בפקודה `/gamble`.',
         type: 'consumable',
         maxQuantity: 10,
         effect: {
@@ -64,9 +64,9 @@ roleId: null,
     },
     {
         id: 'fishing_rod',
-        name: '🎣 Fishing Rod',
+        name: '🎣 חכה',
         price: 5000,
-        description: 'Used for fishing commands',
+        description: 'משמשת לביצוע פקודות דיג ומציאת דגים.',
         type: 'tool',
         durability: 100,
         effect: {
@@ -76,9 +76,9 @@ roleId: null,
     },
     {
         id: 'pickaxe',
-        name: '⛏️ Pickaxe',
+        name: '⛏️ מכוש רגיל',
         price: 7500,
-        description: 'Used for mining commands',
+        description: 'משמש לביצוע פקודות כרייה במכרות.',
         type: 'tool',
         durability: 100,
         effect: {
@@ -88,9 +88,9 @@ roleId: null,
     },
     {
         id: 'laptop',
-        name: '💻 Laptop',
+        name: '💻 מחשב נייד',
         price: 15000,
-        description: 'Increases work earnings',
+        description: 'מגדיל את הרווחים שאתה מקבל כשאתה יוצא לעבוד.',
         type: 'tool',
         durability: 200,
         effect: {
@@ -100,9 +100,9 @@ roleId: null,
     },
     {
         id: 'lucky_charm',
-        name: '🍀 Lucky Charm',
+        name: '🔮 קמע מזal',
         price: 10000,
-        description: 'Increases luck for gambling. Has 3 uses before being consumed.',
+        description: 'מגדיל את המזל בהימורים. כולל 3 שימושים לפני שהקמע נעלם.',
         type: 'consumable',
         maxQuantity: 10,
         effect: {
@@ -113,9 +113,9 @@ roleId: null,
     },
     {
         id: 'bank_note',
-        name: '📜 Bank Note',
+        name: '📜 שטר בנקאי',
         price: 25000,
-        description: 'Increases bank capacity by 10,000. Can be purchased multiple times.',
+        description: 'מגדיל את מקום האחסון בבנק ב-10,000 נוספים. ניתן לרכוש מספר פעמים.',
         type: 'tool',
         durability: null,
         effect: {
@@ -125,9 +125,9 @@ roleId: null,
     },
     {
         id: 'personal_safe',
-        name: '🔒 Personal Safe',
+        name: '🔒 כספת אישית',
         price: 30000,
-        description: 'Protects your money from theft. Prevents others from robbing you.',
+        description: 'מגנה על הכסף שלך מפני גניבות. מונעת ממשתמשים אחרים לשדוד אותך.',
         type: 'tool',
         durability: null,
         effect: {
@@ -153,7 +153,7 @@ export function getItemPrice(itemId) {
 export function validatePurchase(itemId, userData) {
     const item = getItemById(itemId);
     if (!item) {
-        return { valid: false, reason: 'Item not found' };
+        return { valid: false, reason: 'הפריט לא נמצא בחנות.' };
     }
 
     const inventory = userData.inventory || {};
@@ -164,28 +164,26 @@ export function validatePurchase(itemId, userData) {
         if (currentQuantity >= item.maxQuantity) {
             return { 
                 valid: false, 
-                reason: `You can only have a maximum of ${item.maxQuantity} ${item.name}s` 
+                reason: `הגעת למגבלה המקסימלית! אתה יכול להחזיק לכל היותר ${item.maxQuantity} יחידות של ${item.name}.` 
             };
         }
     }
 
     if (item.type === 'upgrade' && item.maxLevel) {
-        
         if (upgrades[itemId]) {
             return { 
                 valid: false, 
-                reason: `You've already purchased ${item.name}` 
+                reason: `כבר רכשת את השדרוג ${item.name} בעבר.` 
             };
         }
     }
 
     if (item.type === 'tool') {
-        
         const currentQuantity = inventory[itemId] || 0;
         if (itemId !== 'bank_note' && currentQuantity > 0) {
             return { 
                 valid: false, 
-                reason: `You already have a ${item.name}` 
+                reason: `כבר יש ברשותך ${item.name}.` 
             };
         }
     }
@@ -194,7 +192,7 @@ export function validatePurchase(itemId, userData) {
         if (userData.roles?.includes(item.roleId)) {
             return { 
                 valid: false, 
-                reason: `You already have the ${item.name} role` 
+                reason: `כבר יש לך את הרול ${item.name}.` 
             };
         }
     }
