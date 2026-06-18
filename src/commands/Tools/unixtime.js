@@ -3,10 +3,11 @@ import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '
 import { logger } from '../../utils/logger.js';
 import { getColor } from '../../config/bot.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('unixtime')
-        .setDescription('Get the current Unix timestamp'),
+        .setDescription('קבלת חותם הזמן הנוכחי של יוניקס (Unix timestamp)'),
 
     async execute(interaction) {
         await InteractionHelper.safeExecute(
@@ -16,11 +17,11 @@ export default {
                 const unixTimestamp = Math.floor(now.getTime() / 1000);
 
                 const embed = successEmbed(
-                    '⏱️ Current Unix Timestamp',
-                    `**Seconds since Unix Epoch:** \`${unixTimestamp}\`\n` +
-                    `**Milliseconds since Unix Epoch:** \`${now.getTime()}\`\n\n` +
-                    `**Human-readable (UTC):** ${now.toUTCString()}\n` +
-                    `**ISO String:** ${now.toISOString()}`
+                    '⏱️ חותם זמן יוניקס נוכחי',
+                    `**שניות מאז תקופת יוניקס:** \`${unixTimestamp}\`\n` +
+                    `**מילישניות מאז תקופת יוניקס:** \`${now.getTime()}\`\n\n` +
+                    `**זמן קריא לבני אדם (UTC):** ${now.toUTCString()}\n` +
+                    `**מחרוזת ISO:** ${now.toISOString()}`
                 );
                 embed.setColor(getColor('success'));
 
@@ -28,7 +29,7 @@ export default {
                     embeds: [embed],
                 });
             },
-            'Failed to get unix timestamp. Please try again.',
+            'שגיאה בהבאת חותם הזמן של יוניקס. אנא נסו שוב.',
             {
                 autoDefer: true,
                 deferOptions: { flags: MessageFlags.Ephemeral }
