@@ -3,17 +3,18 @@ import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/
 import { logger } from '../../utils/logger.js';
 import { handleInteractionError } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast";
 
 export default {
     data: new SlashCommandBuilder()
         .setName("weather")
-        .setDescription("Get real-time weather information for a location")
+        .setDescription("קבלת מידע על מזג האוויר בזמן אמת עבור מיקום מסוים")
         .addStringOption((option) =>
             option
                 .setName("city")
-                .setDescription("The city name, e.g., 'London' or 'Tokyo'")
+                .setDescription("שם העיר, לדוגמה: 'Лондон', 'תל אביב' או 'Tokyo'")
                 .setRequired(true),
         ),
 
@@ -42,7 +43,12 @@ export default {
                     city: city,
                     guildId: interaction.guildId
                 });
-                await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'Could not find a location for **${city}**. Please check the spelling.' });
+                
+                // תוקן לשימוש ב-Backticks כדי שהמשתנה יוצג כראוי
+                await replyUserError(interaction, { 
+                    type: ErrorTypes.USER_INPUT, 
+                    message: `לא הצלחנו למצוא מיקום עבור **${city}**. אנא בדקו את איות השם.` 
+                });
                 return;
             }
 
@@ -61,7 +67,10 @@ export default {
                     userId: interaction.user.id,
                     guildId: interaction.guildId
                 });
-                await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'A weather service error occurred.' });
+                await replyUserError(interaction, { 
+                    type: ErrorTypes.UNKNOWN, 
+                    message: '.התרחשה שגיאה בשירות מזג האוויר' 
+                });
                 return;
             }
 
@@ -73,26 +82,29 @@ export default {
 
             const condition = getWeatherDescription(weatherCode);
 
-            const embed = createEmbed({ title: `Weather in ${cityDisplay}, ${country}`, description: condition.description })
+            const embed = createEmbed({ 
+                title: `מזג האוויר ב${cityDisplay}, ${country}`, 
+                description: condition.description 
+            })
                 .addFields(
                     {
-                        name: "Temperature",
+                        name: "טמפרטורה",
                         value: `${temperature}°C`,
                         inline: true,
                     },
                     {
-                        name: "Humidity",
-                        value: `${humidity}%`,
+                        name: "לחות",
+                        value: humidity !== "N/A" ? `${humidity}%` : "N/A",
                         inline: true,
                     },
                     {
-                        name: "Wind Speed",
-                        value: `${windSpeed} km/h`,
+                        name: "מהירות הרוח",
+                        value: windSpeed !== "N/A" ? `${windSpeed} קמ"ש` : "N/A",
                         inline: true,
                     },
                 )
                 .setFooter({
-                    text: `Latitude: ${latitude.toFixed(2)} | Longitude: ${longitude.toFixed(2)}`,
+                    text: `קו רוחב: ${latitude.toFixed(2)} | קו אורך: ${longitude.toFixed(2)}`,
                 });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
@@ -121,17 +133,17 @@ export default {
 
 function getWeatherDescription(code) {
     if (code >= 0 && code <= 3) {
-        return { description: "Clear sky / Partly cloudy", emoji: "" };
+        return { description: "שמים בהירים / מעונן חלקית ☀️", emoji: "" };
     } else if (code >= 45 && code <= 48) {
-        return { description: "Fog and Rime fog", emoji: "" };
+        return { description: "ערפל או ערפל קרה 🌫️", emoji: "" };
     } else if (code >= 51 && code <= 67) {
-        return { description: "Drizzle or Rain", emoji: "" };
+        return { description: "טפטוף או גשם 🌧️", emoji: "" };
     } else if (code >= 71 && code <= 75) {
-        return { description: "Snow fall", emoji: "" };
+        return { description: "שלג ❄️", emoji: "" };
     } else if (code >= 80 && code <= 86) {
-        return { description: "Showers (Rain/Snow)", emoji: "" };
+        return { description: "ממטרים (גשם/שלג) 🌦️", emoji: "" };
     } else if (code >= 95 && code <= 99) {
-        return { description: "Thunderstorm", emoji: "" };
+        return { description: "סופת רעמים ⛈️", emoji: "" };
     }
-    return { description: "Unknown conditions.", emoji: "" };
+    return { description: "תנאי מזג אוויר לא ידועים.", emoji: "" };
 }
