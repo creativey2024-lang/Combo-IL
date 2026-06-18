@@ -18,13 +18,14 @@ import {
     getApplicationRoleSettings
 } from '../../utils/database.js';
 
+// פונקציית תצוגת סטטוס מתורגמת לעברית
 function getApplicationStatusPresentation(statusValue) {
     const normalized = typeof statusValue === 'string' ? statusValue.trim().toLowerCase() : 'unknown';
     const statusLabel =
-        normalized === 'pending' ? 'In Progress' :
-        normalized === 'approved' ? 'Accepted' :
-        normalized === 'denied' ? 'Denied' :
-        'Unknown';
+        normalized === 'pending' ? 'בבדיקה' :
+        normalized === 'approved' ? 'התקבל' :
+        normalized === 'denied' ? 'נדחה' :
+        'לא ידוע';
     const statusEmoji =
         normalized === 'pending' ? '🟡' :
         normalized === 'approved' ? '🟢' :
@@ -38,15 +39,15 @@ export default {
     slashOnly: true,
     data: new SlashCommandBuilder()
         .setName("apply")
-        .setDescription("Manage role applications")
+        .setDescription("ניהול ומילוי טפסי הגשת מועמדות לרולים")
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("submit")
-                .setDescription("Submit an application for a role")
+                .setDescription("הגשת טופס מועמדות לרול מסוים")
                 .addStringOption((option) =>
                     option
                         .setName("application")
-                        .setDescription("The application you want to submit")
+                        .setDescription("הטופס שברצונך להגיש")
                         .setRequired(true)
                         .setAutocomplete(true),
                 ),
@@ -54,25 +55,25 @@ export default {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("status")
-                .setDescription("Check the status of your application")
+                .setDescription("בדיקת הסטטוס של טפסי המועמדות שלך")
                 .addStringOption((option) =>
                     option
                         .setName("id")
-                        .setDescription("Application ID (leave empty to see all)")
+                        .setDescription("איידי הטופס (השאר ריק כדי לראות את כל הטפסים שלך)")
                         .setRequired(false),
                 ),
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("list")
-                .setDescription("List available applications to apply for"),
+                .setDescription("הצגת רשימת הרולים והטפסים הזמינים להגשה"),
         ),
 
     category: "Community",
 
     execute: withErrorHandling(async (interaction) => {
         if (!interaction.inGuild()) {
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'This command can only be used in a server.' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'ניתן להשתמש בפקודה זו רק בתוך שרת דיסקורד.' });
         }
 
         const { options, guild, member } = interaction;
@@ -98,7 +99,7 @@ export default {
             throw createError(
                 'Applications are disabled',
                 ErrorTypes.CONFIGURATION,
-                'Applications are currently disabled in this server.',
+                'מערכת הטפסים מושבתת כעת בשרת זה.',
                 { guildId: guild.id }
             );
         }
@@ -125,19 +126,19 @@ export async function handleApplicationModal(interaction) {
     const applicationRole = applicationRoles.find(appRole => appRole.roleId === roleId);
     
     if (!applicationRole) {
-        return await replyUserError(interaction, { type: ErrorTypes.CONFIGURATION, message: 'Application configuration not found.' });
+        return await replyUserError(interaction, { type: ErrorTypes.CONFIGURATION, message: 'הגדרות הטופס עבור רול זה לא נמצאו.' });
     }
     
     const role = interaction.guild.roles.cache.get(roleId);
     
     if (!role) {
-        return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'Role not found.' });
+        return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'הרול המבוקש לא נמצא בשרת.' });
     }
     
     const answers = [];
     const settings = await getApplicationSettings(interaction.client, interaction.guild.id);
 
-    let questions = settings.questions || ["Why do you want this role?", "What is your experience?"];
+    let questions = settings.questions || ["מדוע אתה מעוניין ברול זה?", "מהו הניסיון הקודם שלך?"];
     const roleSettings = await getApplicationRoleSettings(interaction.client, interaction.guild.id, roleId);
     if (roleSettings.questions && roleSettings.questions.length > 0) {
         questions = roleSettings.questions;
@@ -162,37 +163,38 @@ export async function handleApplicationModal(interaction) {
             answers: answers
         });
         
+        // אמבד אישור קבלת טופס למשתמש
         const embed = successEmbed(
-            'Application Submitted',
-            `Your application for **${applicationRole.name}** has been submitted successfully!\n\n` +
-            `Application ID: \`${application.id}\`\n` +
-            `You can check the status with \`/apply status id:${application.id}\``
+            '📝 הטופס הוגש בהצלחה',
+            `הטופס שלך עבור הרול **${applicationRole.name}** נשלח בהצלחה לצוות השרת!\n\n` +
+            `🆔 **איידי הטופס:** \`${application.id}\`\n` +
+            `🔍 תוכל לבדוק את סטטוס הטופס בכל עת באמצעות הפקודה: \`/apply status id:${application.id}\``
         );
         
         await InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: ["Ephemeral"] });
         
-        const settings = await getApplicationSettings(interaction.client, interaction.guild.id);
         const roleSettings = await getApplicationRoleSettings(interaction.client, interaction.guild.id, roleId);
         const guildConfig = await getGuildConfig(interaction.client, interaction.guild.id);
 
         const logChannelId = resolveApplicationLogChannel(guildConfig, roleSettings, settings);
 
         if (logChannelId) {
+            // לוג שנשלח למנהלים בערוץ הניהול של הטפסים
             const logMessage = await logEvent({
                 client: interaction.client,
                 guildId: interaction.guild.id,
                 eventType: EVENT_TYPES.APPLICATION_SUBMIT,
                 channelId: logChannelId,
                 data: {
-                    title: 'Application Submitted',
+                    title: '📥 טופס מועמדות חדש הוגש',
                     lines: [
-                        formatLogLine('Applicant', `<@${interaction.user.id}> (${interaction.user.tag})`),
-                        formatLogLine('Application', applicationRole.name),
-                        formatLogLine('Role', role.name),
-                        formatLogLine('Application ID', `\`${application.id}\``),
+                        formatLogLine('מגיש הטופס', `<@${interaction.user.id}> (${interaction.user.tag})`),
+                        formatLogLine('שם הטופס', applicationRole.name),
+                        formatLogLine('הרול המבוקש', role.name),
+                        formatLogLine('איידי טופס', `\`${application.id}\``),
                     ],
                     inlineFields: [
-                        { name: 'Status', value: '🟡 In Progress', inline: true },
+                        { name: 'סטטוס', value: '🟡 בבדיקה', inline: true },
                     ],
                     author: await resolveUserAuthor(interaction.client, interaction.user.id),
                 },
@@ -227,26 +229,26 @@ async function handleList(interaction) {
         const applicationRoles = await getApplicationRoles(interaction.client, interaction.guild.id);
         
         if (applicationRoles.length === 0) {
-            return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'No applications are currently available.' });
+            return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'אין כרגע טפסי מועמדות זמינים בשרת.' });
         }
 
         const embed = createEmbed({
-            title: "Available Applications",
-            description: "Here are the roles you can apply for:"
+            title: "📋 טפסי מועמדות זמינים",
+            description: "להלן הרולים שניתן להגיש אליהם מועמדות כעת:"
         });
 
         applicationRoles.forEach((appRole, index) => {
             const role = interaction.guild.roles.cache.get(appRole.roleId);
             embed.addFields({
                 name: `${index + 1}. ${appRole.name}`,
-                value: `**Role:** ${role ?`<@&${appRole.roleId}>`: 'Role not found'}\n` +
-                       `**Apply with:** \`/apply submit application:"${appRole.name}"\``,
+                value: `**רול:** ${role ? `<@&${appRole.roleId}>` : 'הרול לא נמצא'}\n` +
+                       `**להגשה הגש:** \`/apply submit application:"${appRole.name}"\``,
                 inline: false
             });
         });
 
         embed.setFooter({
-            text: "Use /apply submit application:<name> to apply for any of these roles."
+            text: "השתמש בפקודה /apply submit application:<שם הטופס> כדי להתחיל במילוי."
         });
 
         return InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
@@ -260,7 +262,7 @@ async function handleList(interaction) {
         throw createError(
             'Failed to load applications',
             ErrorTypes.DATABASE,
-            'Failed to load applications. Please try again later.',
+            'נכשלנו בטעינת רשימת הטפסים. אנא נסה שוב מאוחר יותר.',
             { guildId: interaction.guild.id }
         );
     }
@@ -277,7 +279,7 @@ async function handleSubmit(interaction, settings) {
     );
 
     if (!applicationRole) {
-        return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'Use `/apply list` to see available applications.' });
+        return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'הטופס המבוקש לא קיים. השתמש ב-`/apply list` כדי לראות את הרשימה.' });
     }
 
     const userApps = await getUserApplications(
@@ -288,19 +290,20 @@ async function handleSubmit(interaction, settings) {
     const pendingApp = userApps.find((app) => app.status === "pending");
 
     if (pendingApp) {
-        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You already have a pending application. Please wait for it to be reviewed.' });
+        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'כבר יש לך טופס מועמדות שממתין לבדיקה. אנא המתן לתשובת הצוות.' });
     }
 
     const role = interaction.guild.roles.cache.get(applicationRole.roleId);
     if (!role) {
-        return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'The role for this application no longer exists.' });
+        return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'הרול המקושר לטופס זה כבר אינו קיים בשרת.' });
     }
 
+    // בניית חלון הטופס הצץ (Modal)
     const modal = new ModalBuilder()
         .setCustomId(`app_modal_${applicationRole.roleId}`)
-        .setTitle(`Application for ${applicationRole.name}`);
+        .setTitle(`טופס הגשת מועמדות עבור ${applicationRole.name}`);
 
-    let questions = settings.questions || ["Why do you want this role?", "What is your experience?"];
+    let questions = settings.questions || ["מדוע אתה מעוניין ברול זה?", "מהו הניסיון הקודם שלך?"];
     const roleSettings = await getApplicationRoleSettings(interaction.client, interaction.guild.id, applicationRole.roleId);
     if (roleSettings.questions && roleSettings.questions.length > 0) {
         questions = roleSettings.questions;
@@ -336,20 +339,21 @@ async function handleStatus(interaction) {
         );
 
         if (!application || application.userId !== interaction.user.id) {
-            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'Application not found or you do not have permission to view it.' });
+            return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'הטופס לא נמצא או שאין לך הרשאה לצפות בו.' });
         }
 
         const submittedAt = application?.createdAt ? new Date(application.createdAt) : null;
         const submittedAtDisplay = submittedAt && !Number.isNaN(submittedAt.getTime())
-            ? submittedAt.toLocaleString()
-            : 'Unknown date';
+            ? submittedAt.toLocaleString('he-IL')
+            : 'תאריך לא ידוע';
         const statusView = getApplicationStatusPresentation(application.status);
+        
         const embed = createEmbed({
-            title: `Application #${application.id} - ${application.roleName || 'Unknown Role'}`,
+            title: `📑 טופס #${application.id} - ${application.roleName || 'רול לא ידוע'}`,
             description:
-                `**Application ID:** \`${application.id}\`\n` +
-                `**Status:** ${statusView.statusEmoji} ${statusView.statusLabel}\n` +
-                `**Submitted:** ${submittedAtDisplay}`
+                `🆔 **איידי טופס:** \`${application.id}\`\n` +
+                `📊 **סטטוס נוכחי:** ${statusView.statusEmoji} **${statusView.statusLabel}**\n` +
+                `📅 **תאריך הגשה:** ${submittedAtDisplay}`
         });
 
         return InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: ["Ephemeral"] });
@@ -361,7 +365,7 @@ async function handleStatus(interaction) {
         );
 
         if (applications.length === 0) {
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You have not submitted any applications yet.' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'טרם הגשת טפסי מועמדות בשרת זה.' });
         }
 
         const recentApplications = applications
@@ -369,29 +373,28 @@ async function handleStatus(interaction) {
             .slice(0, 10);
 
         const embed = createEmbed({
-            title: "Your Applications",
-            description: `Showing ${recentApplications.length} recent application(s).`
+            title: "🗂️ טפסי המועמדות שלך",
+            description: `מציג את ${recentApplications.length} הטפסים האחרונים שהוגשו על ידך:`
         });
 
         recentApplications.forEach((application) => {
             const submittedAt = application?.createdAt ? new Date(application.createdAt) : null;
             const submittedAtDisplay = submittedAt && !Number.isNaN(submittedAt.getTime())
-                ? submittedAt.toLocaleDateString()
-                : 'Unknown date';
+                ? submittedAt.toLocaleDateString('he-IL')
+                : 'תאריך לא ידוע';
             const statusView = getApplicationStatusPresentation(application.status);
 
             embed.addFields({
-                name: `${statusView.statusEmoji} ${application.roleName || 'Unknown Role'} (${statusView.statusLabel})`,
+                name: `${statusView.statusEmoji} ${application.roleName || 'רול לא ידוע'} (${statusView.statusLabel})`,
                 value:
-                    `**ID:** \`${application.id}\`\n` +
-                    `**Status:** ${statusView.statusEmoji} ${statusView.statusLabel}\n` +
-                    `**Submitted:** ${submittedAtDisplay}`,
+                    `🆔 **איידי:** \`${application.id}\`\n` +
+                    `📅 **הוגש בנט:** ${submittedAtDisplay}`,
                 inline: true,
             });
         });
 
         if (applications.length > recentApplications.length) {
-            embed.setFooter({ text: `Showing latest ${recentApplications.length} of ${applications.length} applications.` });
+            embed.setFooter({ text: `מציג את ${recentApplications.length} הטפסים האחרונים מתוך ${applications.length} בסך הכל.` });
         }
 
         return InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: ["Ephemeral"] });
