@@ -3,29 +3,29 @@ import { createEmbed, errorEmbed, warningEmbed } from '../../utils/embeds.js';
 import { getConfirmationButtons } from '../../utils/components.js';
 import { logger } from '../../utils/logger.js';
 import { handleInteractionError } from '../../utils/errorHandler.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     slashOnly: true,
     data: new SlashCommandBuilder()
         .setName('wipedata')
-        .setDescription('Delete all your personal data from the bot (irreversible)'),
+        .setDescription('מחיקת כל המידע האישי שלך מהבוט (פעולה בלתי הפיכה)'),
 
     async execute(interaction, guildConfig, client) {
         try {
             const warningMessage = 
-                `⚠️ **THIS ACTION IS IRREVERSIBLE!** ⚠️\n\n` +
-                `This will permanently delete **ALL** your data from this server including:\n` +
-                `• 💰 Economy balance (wallet & bank)\n` +
-                `• 📊 Levels and XP\n` +
-                `• 🎒 Inventory items\n` +
-                `• 🛍️ Shop purchases\n` +
-                `• 🎂 Birthday information\n` +
-                `• 🔢 Counter data\n` +
-                `• 📋 All other personal data\n\n` +
-                `**This cannot be undone. Are you absolutely sure?**`;
+                `⚠️ **פעולה זו היא בלתי הפיכה!** ⚠️\n\n` +
+                `פעולה זו תמחק לצמיתות את **כל** הנתונים שלך משרת זה, כולל:\n` +
+                `• 💰 מאזן כלכלה (ארנק ובנק)\n` +
+                `• 📊 רמות ונקודות ניסיון (XP)\n` +
+                `• 🎒 חפצים באינוונטורי (Inventory)\n` +
+                `• 🛍️ רכישות מהחנות\n` +
+                `• 🎂 מידע על ימי הולדת\n` +
+                `• 🔢 נתוני מונים (Counters)\n` +
+                `• 📋 כל מידע אישי אחר\n\n` +
+                `**לא ניתן לבטל פעולה זו לאחר ביצועה. האם אתם בטוחים לחלוטין?**`;
 
-            const embed = warningEmbed('Wipe All Data', warningMessage);
+            const embed = warningEmbed('מחיקת כל המידע', warningMessage);
 
             const confirmButtons = getConfirmationButtons('wipedata');
 
