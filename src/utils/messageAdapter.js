@@ -211,9 +211,10 @@ export async function executePrefixCommand(command, message, args, client, prefi
     });
 
     if (!coordinator.hasResponded()) {
+      // ותרגום הודעת השגיאה במידה וההרצה נכשלה
       const embed = createEmbed({
-        title: 'Command Execution Failed',
-        description: `An error occurred while executing this command.\n\n${error.message}`,
+        title: '❌ הרצת הפקודה נכשלה',
+        description: `התרחשה שגיאה בזמן הרצת הפקודה על ידי Combo IL bot.\n\n**פרטי השגיאה:**\n\`${error.message}\``,
         color: 'error',
       });
       await coordinator.respond({ embeds: [embed] });
