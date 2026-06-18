@@ -2,17 +2,17 @@ import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import axios from 'axios';
 import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
-import { handleInteractionError } from '../../utils/errorHandler.js';
+import { handleInteractionError, replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { getColor } from '../../config/bot.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('urban')
-        .setDescription('Search Urban Dictionary for definitions')
+        .setDescription('חיפוש הגדרות ב-Urban Dictionary')
         .addStringOption(option => 
             option.setName('term')
-                .setDescription('The term to look up on Urban Dictionary')
+                .setDescription('המונח לחיפוש ב-Urban Dictionary')
                 .setRequired(true)),
     
     async execute(interaction) {
@@ -25,7 +25,7 @@ export default {
                     term: term,
                     guildId: interaction.guildId
                 });
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Please enter a term with at least 2 characters.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'נא להזין מונח באורך של לפחות 2 תווים.' });
             }
 
             let deferTimer = null;
@@ -53,7 +53,7 @@ export default {
             clearDeferTimer();
             
             if (!response.data?.list?.length) {
-                return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'No definitions found for "${term}" on Urban Dictionary.' });
+                return await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: `לא נמצאו הגדרות עבור "${term}" ב-Urban Dictionary.` });
             }
             
             const definition = response.data.list[0];
@@ -61,12 +61,12 @@ export default {
             const cleanExample = definition.example.replace(/\[|\]/g, '');
             
             const formattedDefinition = cleanDefinition
-.replace(/\n\s*\n/g, '\n\n')
+                .replace(/\n\s*\n/g, '\n\n')
                 .slice(0, 2000);
                 
             const formattedExample = cleanExample
                 ? `*"${cleanExample.replace(/\n/g, ' ').slice(0, 500)}..."*`
-                : '*No example provided*';
+                : '*לא סופקה דוגמה*';
             
             const embed = createEmbed({
                 title: definition.word,
@@ -76,18 +76,18 @@ export default {
             .setURL(definition.permalink)
             .addFields(
                 { 
-                    name: 'Example', 
+                    name: 'דוגמה', 
                     value: formattedExample,
                     inline: false 
                 },
                 { 
-                    name: 'Stats', 
-                    value: `${definition.thumbs_up.toLocaleString()} • ${definition.thumbs_down.toLocaleString()}`,
+                    name: 'סטטיסטיקה', 
+                    value: `${definition.thumbs_up.toLocaleString()} 👍 • ${definition.thumbs_down.toLocaleString()} 👎`,
                     inline: true 
                 },
                 { 
-                    name: 'Author', 
-                    value: definition.author || 'Anonymous',
+                    name: 'כותב', 
+                    value: definition.author || 'אלמוני',
                     inline: true 
                 }
             )
@@ -108,7 +108,6 @@ export default {
         } catch (error) {
             logger.error('Urban Dictionary error', {
                 error: error.message,
-                stack: error.stack,
                 userId: interaction.user.id,
                 term: interaction.options.getString('term'),
                 guildId: interaction.guildId,
@@ -117,9 +116,9 @@ export default {
             });
 
             if (error.response?.status === 404 || !error.response) {
-                await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: 'No definitions found for "${interaction.options.getString(\'term\')}" on Urban Dictionary.' });
+                await replyUserError(interaction, { type: ErrorTypes.USER_INPUT, message: `לא נמצאו הגדרות עבור "${interaction.options.getString('term')}" ב-Urban Dictionary.` });
             } else if (error.response?.status === 429) {
-                await replyUserError(interaction, { type: ErrorTypes.RATE_LIMIT, message: 'Too many requests to Urban Dictionary. Please try again in a few minutes.' });
+                await replyUserError(interaction, { type: ErrorTypes.RATE_LIMIT, message: 'יותר מדי בקשות ל-Urban Dictionary. אנא נסה שוב בעוד כמה דקות.' });
             } else {
                 await handleInteractionError(interaction, error, {
                     commandName: 'urban',
