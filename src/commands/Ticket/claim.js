@@ -2,19 +2,19 @@ import { getColor } from '../../config/bot.js';
 import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
 import { successEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
-import { handleInteractionError } from '../../utils/errorHandler.js';
+import { handleInteractionError, replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { getTicketPermissionContext } from '../../utils/ticketPermissions.js';
 import { claimTicket } from '../../services/ticket.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("claim")
-        .setDescription("Claims an open ticket, assigning it to you.")
+        .setDescription("לקיחת אחריות על טיקט פתוח והקצאתו אליך")
         .setDMPermission(false),
 
     async execute(interaction, guildConfig, client) {
         try {
-            
             const deferred = await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
             if (!deferred) {
                 return;
@@ -22,11 +22,11 @@ export default {
 
             const permissionContext = await getTicketPermissionContext({ client, interaction });
             if (!permissionContext.ticketData) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'This command can only be used in a valid ticket channel.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'ניתן להשתמש בפקודה זו רק בתוך ערוץ טיקט תקין.' });
             }
 
             if (!permissionContext.canManageTicket) {
-                return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the `Manage Channels` permission or the configured `Ticket Staff Role` to claim tickets.' });
+                return await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'דרושה הרשאת `Manage Channels` (ניהול ערוצים) או תפקיד צוות טיקטים מוגדר כדי לקחת אחריות על טיקט.' });
             }
 
             const channel = interaction.channel;
@@ -39,14 +39,14 @@ export default {
                     guildId: interaction.guildId,
                     error: result.error
                 });
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'result.error || "This command can only be used in a valid ticket channel."' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: result.error || "לא ניתן לקחת אחריות על טיקט זה." });
             }
 
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        "Ticket Claimed!",
-                        "You have successfully claimed this ticket.",
+                        "הטיקט נלקח!",
+                        "לקחת בהצלחה אחריות על טיקט זה.",
                     ),
                 ],
             });
