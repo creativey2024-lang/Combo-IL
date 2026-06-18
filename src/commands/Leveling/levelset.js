@@ -4,22 +4,22 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { checkUserPermissions } from '../../utils/permissionGuard.js';
 import { setUserLevel, getLevelingConfig } from '../../services/leveling.js';
 import { createEmbed } from '../../utils/embeds.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
   data: new SlashCommandBuilder()
     .setName('levelset')
-    .setDescription("Set a user's level to a specific value")
+    .setDescription("קביעת הרמה של משתמש לערך ספציפי")
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to set the level for')
+        .setDescription('המשתמש שברצונך לקבוע את רמתו')
         .setRequired(true)
     )
     .addIntegerOption((option) =>
       option
         .setName('level')
-        .setDescription('The level to set')
+        .setDescription('הרמה שברצונך לקבוע')
         .setRequired(true)
         .setMinValue(0)
     )
@@ -34,7 +34,7 @@ export default {
       const hasPermission = await checkUserPermissions(
         interaction,
         PermissionFlagsBits.ManageGuild,
-        'You need ManageGuild permission to use this command.'
+        'אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בפקודה זו.'
       );
       if (!hasPermission) return;
 
@@ -44,7 +44,7 @@ export default {
           embeds: [
             new EmbedBuilder()
               .setColor('#f1c40f')
-              .setDescription('The leveling system is currently disabled on this server.')
+              .setDescription('מערכת הרמות מושבתת כרגע בשרת זה.')
           ],
           flags: MessageFlags.Ephemeral
         });
@@ -59,7 +59,7 @@ export default {
         throw new TitanBotError(
           `User ${targetUser.id} not found in this guild`,
           ErrorTypes.USER_INPUT,
-          'The specified user is not in this server.'
+          'המשתמש שצוין אינו נמצא בשרת זה.'
         );
       }
 
@@ -68,8 +68,8 @@ export default {
       await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'Level Set',
-            description: `Successfully set ${targetUser.tag}'s level to **${newLevel}**.\n**Total XP:** ${userData.totalXp}`,
+            title: '🎯 הרמה עודכנה',
+            description: `הרמה של המשתמש ${targetUser.tag} נקבעה בהצלחה ל-**${newLevel}**.\n**סך הכל XP:** ${userData.totalXp}`,
             color: 'success'
           })
         ]
