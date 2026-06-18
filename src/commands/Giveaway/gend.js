@@ -15,12 +15,12 @@ export default {
     data: new SlashCommandBuilder()
         .setName("gend")
         .setDescription(
-            "Ends an active giveaway immediately and picks the winner(s).",
+            "סיום מיידי של הגרלה פעילה ובחירת הזוכים.",
         )
         .addStringOption((option) =>
             option
                 .setName("messageid")
-                .setDescription("The message ID of the giveaway to end.")
+                .setDescription("מזהה ההודעה (Message ID) של ההגרלה שברצונכם לסיים.")
                 .setRequired(true),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
@@ -32,7 +32,7 @@ export default {
                 throw new TitanBotError(
                     'Giveaway command used outside guild',
                     ErrorTypes.VALIDATION,
-                    'This command can only be used in a server.',
+                    'ניתן להשתמש בפקודה זו בתוך שרתים בלבד.',
                     { userId: interaction.user.id }
                 );
             }
@@ -41,7 +41,7 @@ export default {
                 throw new TitanBotError(
                     'User lacks ManageGuild permission',
                     ErrorTypes.PERMISSION,
-                    "You need the 'Manage Server' permission to end a giveaway.",
+                    "אתה זקוק להרשאת 'ניהול שרת' כדי לסיים הגרלה.",
                     { userId: interaction.user.id, guildId: interaction.guildId }
                 );
             }
@@ -54,7 +54,7 @@ export default {
                 throw new TitanBotError(
                     'Invalid message ID format',
                     ErrorTypes.VALIDATION,
-                    'Please provide a valid message ID.',
+                    'אנא ספק מזהה הודעה (Message ID) תקין.',
                     { providedId: messageId }
                 );
             }
@@ -66,7 +66,7 @@ export default {
                 throw new TitanBotError(
                     `Giveaway not found: ${messageId}`,
                     ErrorTypes.VALIDATION,
-                    "No giveaway was found with that message ID in the database.",
+                    "לא נמצאה הגרלה במסד הנתונים התואמת למזהה ההודעה שסופק.",
                     { messageId, guildId: interaction.guildId }
                 );
             }
@@ -92,7 +92,7 @@ export default {
                 throw new TitanBotError(
                     `Channel not found: ${updatedGiveaway.channelId}`,
                     ErrorTypes.VALIDATION,
-                    "Could not find the channel where the giveaway was hosted. The giveaway state has been updated.",
+                    "לא ניתן היה למצוא את הערוץ שבו התנהלה ההגרלה. מצב ההגרלה עודכן במערכת.",
                     { channelId: updatedGiveaway.channelId, messageId }
                 );
             }
@@ -108,7 +108,7 @@ export default {
                 throw new TitanBotError(
                     `Message not found: ${messageId}`,
                     ErrorTypes.VALIDATION,
-                    "Could not find the giveaway message. The giveaway state has been updated.",
+                    "לא ניתן היה למצוא את הודעת ההגרלה המקורית. מצב ההגרלה עודכן במערכת.",
                     { messageId, channelId: updatedGiveaway.channelId }
                 );
             }
@@ -123,7 +123,7 @@ export default {
             const newRow = createGiveawayButtons(true);
 
             await message.edit({
-                content: "🎉 **GIVEAWAY ENDED** 🎉",
+                content: "🎉 **ההגרלה הסתיימה** 🎉",
                 embeds: [newEmbed],
                 components: [newRow],
             });
@@ -131,9 +131,9 @@ export default {
             if (winners.length > 0) {
                 const winnerMentions = winners
                     .map((id) => `<@${id}>`)
-                    .join(",");
+                    .join(", ");
                 const winnerPingMsg = await channel.send({
-                    content: `🎉 CONGRATULATIONS ${winnerMentions}! You won the **${updatedGiveaway.prize}** giveaway! Please contact the host <@${updatedGiveaway.hostId}> to claim your prize.`,
+                    content: `🎉 **מזל טוב ${winnerMentions}!** זכיתם בהגרלה על **${updatedGiveaway.prize}**! אנא צרו קשר עם יוצר ההגרלה <@${updatedGiveaway.hostId}> כדי לקבל את הפרס שלכם.`,
                 });
                 updatedGiveaway.winnerPingMessageId = winnerPingMsg.id;
                 await saveGiveaway(interaction.client, interaction.guildId, updatedGiveaway);
@@ -173,7 +173,7 @@ export default {
                 }
             } else {
                 await channel.send({
-                    content: `The giveaway for **${updatedGiveaway.prize}** has ended with no valid entries.`,
+                    content: `ההגרלה עבור **${updatedGiveaway.prize}** הסתיימה, אך לא נרשמו משתתפים חוקיים.`,
                 });
                 logger.info(`Giveaway ended with no winners: ${messageId}`);
             }
@@ -183,8 +183,8 @@ export default {
             return InteractionHelper.safeReply(interaction, {
                 embeds: [
                     successEmbed(
-                        "Giveaway Ended ✅",
-                        `Successfully ended the giveaway for **${updatedGiveaway.prize}** in ${channel}. Selected ${winners.length} winner(s) from ${endResult.participantCount} entries.`,
+                        "ההגרלה הסתיימה בהצלחה ✅",
+                        `ההגרלה עבור **${updatedGiveaway.prize}** בערוץ ${channel} נסגרה. נבחרו ${winners.length} זוכה/זוכים מתוך ${endResult.participantCount} משתתפים.`,
                     ),
                 ],
                 flags: MessageFlags.Ephemeral,
