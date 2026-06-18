@@ -17,32 +17,32 @@ const defaultAccountAgeDays = autoVerifyDefaults.defaultAccountAgeDays ?? 7;
 export default {
     data: new SlashCommandBuilder()
         .setName("autoverify")
-        .setDescription("Configure automatic verification settings")
+        .setDescription("הגדרת מערכת האימות האוטומטי בשרת")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addSubcommand(subcommand =>
             subcommand
                 .setName("setup")
-                .setDescription("Set up automatic verification")
+                .setDescription("הגדרת אימות אוטומטי ראשוני")
                 .addRoleOption(option =>
                     option
                         .setName("role")
-                        .setDescription("Role to assign to users who meet auto-verify criteria")
+                        .setDescription("התפקיד שיינתן למשתמשים העומדים בקריטריונים")
                         .setRequired(true)
                 )
                 .addStringOption(option =>
                     option
                         .setName("criteria")
-                        .setDescription("Criteria for automatic verification")
+                        .setDescription("הקריטריון לביצוע אימות אוטומטי")
                         .addChoices(
-                            { name: "Account Age", value: "account_age" },
-                            { name: "No Criteria", value: "none" }
+                            { name: "וותק החשבון", value: "account_age" },
+                            { name: "ללא קריטריון (כולם)", value: "none" }
                         )
                         .setRequired(true)
                 )
                 .addIntegerOption(option =>
                     option
                         .setName("account_age_days")
-                        .setDescription("Minimum account age in days (required for account age criteria)")
+                        .setDescription("וותק חשבון מינימלי בימים (נדרש עבור קריטריון וותק החשבון)")
                         .setMinValue(minAccountAgeDays)
                         .setMaxValue(maxAccountAgeDays)
                         .setRequired(false)
@@ -51,7 +51,7 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName("dashboard")
-                .setDescription("Open the auto-verification dashboard for customization")
+                .setDescription("פתיחת לוח הבקרה (Dashboard) של האימות האוטומטי להתאמה אישית")
         ),
 
     async execute(interaction, config, client) {
@@ -68,7 +68,7 @@ export default {
                     throw createError(
                         `Unknown subcommand: ${subcommand}`,
                         ErrorTypes.VALIDATION,
-                        "Invalid subcommand selected.",
+                        "נבחרה תת-פקודה לא תקינה.",
                         { subcommand }
                     );
             }
@@ -95,7 +95,7 @@ async function handleSetup(interaction, guild, client) {
             throw createError(
                 'Auto-verify enable blocked by conflicting onboarding system',
                 ErrorTypes.CONFIGURATION,
-                'You cannot enable **AutoVerify** while the verification system or AutoRole is configured. Disable those first.',
+                'לא ניתן להפעיל את מערכת ה-**AutoVerify** כאשר מערכת האימות הרגילה או מערכת ה-AutoRole מוגדרות בשרת. יש להשבית אותן תחילה.',
                 {
                     guildId: guild.id,
                     verificationEnabled,
@@ -111,7 +111,7 @@ async function handleSetup(interaction, guild, client) {
             throw createError(
                 'Bot member not found in guild cache',
                 ErrorTypes.CONFIGURATION,
-                'I could not verify my permissions in this server. Please try again in a moment.',
+                'לא הצלחתי לאמת את ההרשאות שלי בשרת זה. אנא נסו שוב בעוד רגע.',
                 { guildId: guild.id }
             );
         }
@@ -120,7 +120,7 @@ async function handleSetup(interaction, guild, client) {
             throw createError(
                 'Missing ManageRoles permission',
                 ErrorTypes.PERMISSION,
-                "I need the 'Manage Roles' permission to assign auto-verify roles.",
+                "אני זקוק להרשאת 'ניהול תפקידים' (Manage Roles) כדי להעניק תפקידים באימות האוטומטי.",
                 { guildId: guild.id }
             );
         }
@@ -129,7 +129,7 @@ async function handleSetup(interaction, guild, client) {
             throw createError(
                 'Invalid auto-verify role selected',
                 ErrorTypes.VALIDATION,
-                'Please choose a normal assignable role (not @everyone or an integration-managed role).',
+                'אנא בחרו בתפקיד רגיל הניתן להענקה (לא תפקיד @everyone או תפקיד המנוהל על ידי אינטגרציה/בוט אחר).',
                 { guildId: guild.id, roleId: targetRole.id, managed: targetRole.managed }
             );
         }
@@ -138,7 +138,7 @@ async function handleSetup(interaction, guild, client) {
             throw createError(
                 'Role hierarchy error for auto-verify setup',
                 ErrorTypes.PERMISSION,
-                'The selected auto-verify role must be below my highest role in the server role hierarchy.',
+                'התפקיד שנבחר עבור האימות האוטומטי חייב להיות מתחת לתפקיד הגבוה ביותר שלי בהיררכיית התפקידים של השרת.',
                 { guildId: guild.id, roleId: targetRole.id, rolePosition: targetRole.position, botRolePosition: botMember.roles.highest.position }
             );
         }
@@ -162,10 +162,10 @@ async function handleSetup(interaction, guild, client) {
         let criteriaDescription = "";
         switch (criteria) {
             case "account_age":
-                criteriaDescription = `\`${accountAgeDays} days\` old`;
+                criteriaDescription = `וותק חשבון של לפחות \`${accountAgeDays} ימים\``;
                 break;
             case "none":
-                criteriaDescription = "All users immediately";
+                criteriaDescription = "כל המשתמשים באופן מיידי";
                 break;
         }
 
@@ -178,13 +178,12 @@ async function handleSetup(interaction, guild, client) {
 
         await InteractionHelper.safeEditReply(interaction, {
             embeds: [successEmbed(
-                "Auto-Verification Configured",
-                `Automatic verification has been configured!\n\n**Role:** ${targetRole}\n**Criteria:** ${criteriaDescription}\n\nUsers who meet these criteria will receive this role when they join the server.`
+                "מערכת האימות האוטומטי הוגדרה בהצלחה",
+                `הגדרות האימות האוטומטי עודכנו בהצלחה!\n\n**התפקיד שיוענק:** ${targetRole}\n**הקריטריון:** ${criteriaDescription}\n\nמשתמשים שיעמדו בקריטריונים אלו יקבלו את התפקיד באופן אוטומטי ברגע הצטרפותם לשרת.`
             )]
         });
 
     } catch (error) {
-        
         throw error;
     }
 }
