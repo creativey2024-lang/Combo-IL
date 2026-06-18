@@ -11,17 +11,17 @@ const PICKAXE_MULTIPLIER = 1.2;
 const DIAMOND_PICKAXE_MULTIPLIER = 2.0;
 
 const MINE_LOCATIONS = [
-    "abandoned gold mine",
-    "dark, damp cave",
-    "backyard rock quarry",
-    "volcanic obsidian vent",
-    "deep-sea mineral trench",
+    "מכרה זהב נטוש",
+    "מערה חשוכה ולחה",
+    "מחצבת סלעים בחצר האחורית",
+    "פתח אובסידיאן וולקני",
+    "תעלת מינרלים במעמקי הים",
 ];
 
 export default {
     data: new SlashCommandBuilder()
         .setName('mine')
-        .setDescription('Go mining to earn money'),
+        .setDescription('צא לכרייה במכרות כדי להרוויח כסף'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -43,10 +43,14 @@ export default {
                     (remaining % (1000 * 60 * 60)) / (1000 * 60),
                 );
 
+                let cooldownMsg = hours > 0 
+                    ? `**${hours} שעות ו-${minutes} דקות**` 
+                    : `**${minutes} דקות**`;
+
                 throw createError(
                     "Mining cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `Your pickaxe is cooling down. Wait for **${hours}h ${minutes}m** before mining again.`,
+                    `המכוש שלך עדיין חם! עליך להמתין עוד ${cooldownMsg} לפני שתוכל לצאת לכרות שוב.`,
                     { remaining, cooldownType: 'mine' }
                 );
             }
@@ -61,10 +65,10 @@ export default {
 
             if (hasDiamondPickaxe > 0) {
                 finalEarned = Math.floor(baseEarned * DIAMOND_PICKAXE_MULTIPLIER);
-                multiplierMessage = `\n💎 **Diamond Pickaxe Bonus: +100%**`;
+                multiplierMessage = `\n💎 **בונוס מכוש יהלום: +100%**`;
             } else if (hasPickaxe > 0) {
                 finalEarned = Math.floor(baseEarned * PICKAXE_MULTIPLIER);
-                multiplierMessage = `\n⛏️ **Pickaxe Bonus: +20%**`;
+                multiplierMessage = `\n⛏️ **בונוס מכוש רגיל: +20%**`;
             }
 
             const location =
@@ -73,20 +77,20 @@ export default {
                 ];
 
             userData.wallet += finalEarned;
-userData.lastMine = now;
+            userData.lastMine = now;
 
             await setEconomyData(client, guildId, userId, userData);
 
             const embed = successEmbed(
-                "💰 Mining Expedition Successful!",
-                `You explored a **${location}** and managed to find minerals worth **$${finalEarned.toLocaleString()}**!${multiplierMessage}`,
+                "💰 מסע הכרייה הצליח!",
+                `חקרת **${location}** והצלחת למצוא מינרלים יקרי ערך שנמכרו בסך של **$${finalEarned.toLocaleString()}**!${multiplierMessage}`,
             )
                 .addFields({
-                    name: "New Cash Balance",
+                    name: "יתרה חדשה בארנק",
                     value: `$${userData.wallet.toLocaleString()}`,
                     inline: true,
                 })
-                .setFooter({ text: `Next mine available in 1 hour.` });
+                .setFooter({ text: `מסע הכרייה הבא שלך יהיה זמין בעוד שעה.` });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'mine' })
