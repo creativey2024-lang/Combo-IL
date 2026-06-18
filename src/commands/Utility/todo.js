@@ -13,119 +13,119 @@ function generateShareId() {
 export default {
     data: new SlashCommandBuilder()
         .setName("todo")
-        .setDescription("Manage your personal to-do list")
+        .setDescription("ניהול רשימת המשימות האישית שלכם")
         .addSubcommand(subcommand =>
             subcommand
                 .setName("add")
-                .setDescription("Add a task to your to-do list")
+                .setDescription("הוספת משימה חדשה לרשימה שלכם")
                 .addStringOption(option =>
                     option
-                        .setName("task")
-                        .setDescription("The task to add")
+                        .setName("משימה")
+                        .setDescription("תוכן המשימה שברצונכם להוסיף")
                         .setRequired(true)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("list")
-                .setDescription("View your to-do list")
+                .setDescription("הצגת רשימת המשימות שלכם")
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("complete")
-                .setDescription("Mark a task as complete")
+                .setDescription("סימון משימה כבוצעה")
                 .addIntegerOption(option =>
                     option
-                        .setName("number")
-                        .setDescription("The number of the task to complete")
+                        .setName("מספר")
+                        .setDescription("מספר המשימה שברצונכם לסמן כבוצעה")
                         .setRequired(true)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("remove")
-                .setDescription("Remove a task from your to-do list")
+                .setDescription("מחיקת משימה מרשימת המשימות שלכם")
                 .addIntegerOption(option =>
                     option
-                        .setName("number")
-                        .setDescription("The number of the task to remove")
+                        .setName("מספר")
+                        .setDescription("מספר המשימה שברצונכם למחוק")
                         .setRequired(true)
                 )
         )
         .addSubcommandGroup(group => 
             group
                 .setName("share")
-                .setDescription("Manage shared to-do lists")
+                .setDescription("ניהול רשימות משימות משותפות")
                 .addSubcommand(subcommand =>
                     subcommand
                         .setName("create")
-                        .setDescription("Create a new shared to-do list")
+                        .setDescription("יצירת רשימת משימות משותפת חדשה")
                         .addStringOption(option =>
                             option
-                                .setName("name")
-                                .setDescription("Name for the shared list")
+                                .setName("שם")
+                                .setDescription("שם עבור הרשימה המשותפת")
                                 .setRequired(true)
                         )
                 )
                 .addSubcommand(subcommand =>
                     subcommand
                         .setName("add")
-                        .setDescription("Add a member to a shared list")
+                        .setDescription("הוספת חבר לרשימה המשותפת")
                         .addStringOption(option =>
                             option
-                                .setName("list_id")
-                                .setDescription("ID of the shared list")
+                                .setName("איידי_רשימה")
+                                .setDescription("האיידי (ID) של הרשימה המשותפת")
                                 .setRequired(true)
                         )
                         .addUserOption(option =>
                             option
-                                .setName("user")
-                                .setDescription("User to add to the list")
+                                .setName("משתמש")
+                                .setDescription("המשתמש שברצונכם להוסיף לרשימה")
                                 .setRequired(true)
                         )
                 )
                 .addSubcommand(subcommand =>
                     subcommand
                         .setName("view")
-                        .setDescription("View a shared to-do list")
+                        .setDescription("הצגת רשימת משימות משותפת")
                         .addStringOption(option =>
                             option
-                                .setName("list_id")
-                                .setDescription("ID of the shared list")
+                                .setName("איידי_רשימה")
+                                .setDescription("האיידי (ID) של הרשימה המשותפת")
                                 .setRequired(true)
                         )
                 )
                 .addSubcommand(subcommand =>
                     subcommand
                         .setName("addtask")
-                        .setDescription("Add a task to a shared to-do list")
+                        .setDescription("הוספת משימה לרשימה משותפת")
                         .addStringOption(option =>
                             option
-                                .setName("list_id")
-                                .setDescription("ID of the shared list")
+                                .setName("איידי_רשימה")
+                                .setDescription("האיידי (ID) של הרשימה המשותפת")
                                 .setRequired(true)
                         )
                         .addStringOption(option =>
                             option
-                                .setName("task")
-                                .setDescription("The task to add")
+                                .setName("משימה")
+                                .setDescription("תוכן המשימה שברצונכם להוסיף")
                                 .setRequired(true)
                         )
                 )
                 .addSubcommand(subcommand =>
                     subcommand
                         .setName("remove")
-                        .setDescription("Remove a task from a shared to-do list")
+                        .setDescription("מחיקת משימה מרשימה משותפת")
                         .addStringOption(option =>
                             option
-                                .setName("list_id")
-                                .setDescription("ID of the shared list")
+                                .setName("איידי_רשימה")
+                                .setDescription("האיידי (ID) של הרשימה המשותפת")
                                 .setRequired(true)
                         )
                         .addIntegerOption(option =>
                             option
-                                .setName("number")
-                                .setDescription("The number of the task to remove")
+                                .setName("מספר")
+                                .setDescription("מספר המשימה שברצונכם למחוק")
                                 .setRequired(true)
                         )
                 )
@@ -136,8 +136,8 @@ export default {
 
     async execute(interaction, config, client) {
         const userId = interaction.user.id;
-                const subcommand = interaction.options.getSubcommand();
-                const shareSubcommand = interaction.options.getSubcommandGroup() === 'share' ? interaction.options.getSubcommand() : null;
+        const subcommand = interaction.options.getSubcommand();
+        const shareSubcommand = interaction.options.getSubcommandGroup() === 'share' ? interaction.options.getSubcommand() : null;
 
         async function getOrCreateSharedList(listId, creatorId = null, listName = null) {
             const listKey = `shared_todo_${listId}`;
@@ -183,7 +183,7 @@ export default {
             if (shareSubcommand) {
                 switch (shareSubcommand) {
                     case 'create': {
-                        const listName = interaction.options.getString('name');
+                        const listName = interaction.options.getString('שם');
                         const listId = generateShareId();
                         
                         await getOrCreateSharedList(listId, userId, listName);
@@ -198,25 +198,25 @@ export default {
                         return await InteractionHelper.safeEditReply(interaction, {
                             embeds: [
                                 successEmbed(
-                                    "Shared List Created",
-                                    `Created shared list "${listName}" with ID: \`${listId}\`\n` +
-                                    `Use \`/todo share add list_id:${listId} user:@username\` to add members.`
+                                    "הרשימה המשותפת נוצרה בהצלחה",
+                                    `נוצרה הרשימה המשותפת "${listName}" עם האיידי: \`${listId}\`\n` +
+                                    `השתמשו בפקודה \`/todo share add איידי_רשימה:${listId} משתמש:@username\` כדי להוסיף חברים.`
                                 )
                             ]
                         });
                     }
                     
                     case 'add': {
-                        const listId = interaction.options.getString('list_id');
-                        const memberToAdd = interaction.options.getUser('user');
+                        const listId = interaction.options.getString('איידי_רשימה');
+                        const memberToAdd = interaction.options.getUser('משתמש');
                         
                         const listData = await getOrCreateSharedList(listId);
                         if (!listData) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Shared list not found.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'הרשימה המשותפת לא נמצאה.' });
                         }
                         
                         if (listData.creatorId !== userId) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Only the list creator can add members.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'רק יוצר הרשימה יכול להוסיף חברים חדשים.' });
                         }
                         
                         if (!listData.members.includes(memberToAdd.id)) {
@@ -232,33 +232,33 @@ export default {
                             
                             return await InteractionHelper.safeEditReply(interaction, {
                                 embeds: [
-                                    successEmbed('Member Added', 
-                                        `Added ${memberToAdd.username} to the shared list "${listData.name}"`
+                                    successEmbed('חבר קבוצה נוסף', 
+                                        `המשתמש ${memberToAdd.username} נוסף בהצלחה לרשימה המשותפת "${listData.name}"`
                                     )
                                 ]
                             });
                         } else {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'User is already a member of this list.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'משתמש זה כבר חבר ברשימה זו.' });
                         }
                     }
                     
                     case 'view': {
-                        const listId = interaction.options.getString('list_id');
+                        const listId = interaction.options.getString('איידי_רשימה');
                         const listData = await getOrCreateSharedList(listId);
                         
                         if (!listData) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Shared list not found.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'הרשימה המשותפת לא נמצאה.' });
                         }
                         
                         if (!listData.members.includes(userId)) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You don\'t have access to this list.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'אין לכם גישה לרשימה זו.' });
                         }
                         
                         if (listData.tasks.length === 0) {
                             const memberList = listData.members.map(memberId => {
                                 const member = interaction.guild.members.cache.get(memberId);
                                 return member ? member.user.username : `<@${memberId}>`;
-                            }).join(',');
+                            }).join(', ');
                             
                             const owner = interaction.guild.members.cache.get(listData.creatorId);
                             const ownerName = owner ? owner.user.username : `<@${listData.creatorId}>`;
@@ -267,25 +267,25 @@ export default {
                                     embeds: [
                                         successEmbed(
                                             `📋 **${listData.name}**\n\n` +
-                                            `👑 **Owner:** ${ownerName}\n` +
-                                            `👥 **Members:** ${memberList}\n\n` +
-                                            `*This list is currently empty. Use the "Add Task" button to add tasks!*`,
-                                            `Shared List (ID: \`${listId}\`)`
+                                            `👑 **בעלים:** ${ownerName}\n` +
+                                            `👥 **חברים:** ${memberList}\n\n` +
+                                            `*רשימה זו ריקה כרגע. השתמשו בכפתור "הוספת משימה" כדי להוסיף משימות חדשות!*`,
+                                            `רשימה משותפת (ID: \`${listId}\`)`
                                         )
                                     ],
                                     components: [
                                         new ActionRowBuilder().addComponents(
                                             new ButtonBuilder()
                                                 .setCustomId(`shared_todo_add_${listId}`)
-                                                .setLabel('Add Task')
+                                                .setLabel('הוספת משימה')
                                                 .setStyle(ButtonStyle.Primary),
                                             new ButtonBuilder()
                                                 .setCustomId(`shared_todo_complete_${listId}`)
-                                                .setLabel('Complete Task')
+                                                .setLabel('סיום משימה')
                                                 .setStyle(ButtonStyle.Success),
                                             new ButtonBuilder()
                                                 .setCustomId(`shared_todo_remove_${listId}`)
-                                                .setLabel('Remove Task')
+                                                .setLabel('מחיקת משימה')
                                                 .setStyle(ButtonStyle.Danger)
                                         )
                                     ]
@@ -295,41 +295,41 @@ export default {
                         const taskList = listData.tasks
                             .map(task => 
                                 `${task.completed ? '✅' : '📝'} #${task.id} ${task.text}` +
-                                `\`[${new Date(task.createdAt).toLocaleDateString()}]` +
-                                (task.completed ? `• Completed by ${task.completedBy}` : '') + '`'
+                                ` \`[${new Date(task.createdAt).toLocaleDateString()}]\`` +
+                                (task.completed ? ` \`• הושלם על ידי ${task.completedBy}\`` : '')
                             )
                             .join('\n');
 
                         const memberList = listData.members.map(memberId => {
                             const member = interaction.guild.members.cache.get(memberId);
                             return member ? member.user.username : `<@${memberId}>`;
-                        }).join(',');
+                        }).join(', ');
                         
                         const owner = interaction.guild.members.cache.get(listData.creatorId);
                         const ownerName = owner ? owner.user.username : `<@${listData.creatorId}>`;
 
                         const fullListDisplay = `📋 **${listData.name}**\n\n` +
-                            `👑 **Owner:** ${ownerName}\n` +
-                            `👥 **Members:** ${memberList}\n\n` +
-                            `**Tasks:**\n${taskList}`;
+                            `👑 **בעלים:** ${ownerName}\n` +
+                            `👥 **חברים:** ${memberList}\n\n` +
+                            `**משימות:**\n${taskList}`;
 
                         return await InteractionHelper.safeEditReply(interaction, {
                             embeds: [
-                                successEmbed(`Shared List (ID: \`${listId}\`)`, fullListDisplay)
+                                successEmbed(`רשימה משותפת (ID: \`${listId}\`)`, fullListDisplay)
                             ],
                             components: [
                                 new ActionRowBuilder().addComponents(
                                     new ButtonBuilder()
                                         .setCustomId(`shared_todo_add_${listId}`)
-                                        .setLabel('Add Task')
+                                        .setLabel('הוספת משימה')
                                         .setStyle(ButtonStyle.Primary),
                                     new ButtonBuilder()
                                         .setCustomId(`shared_todo_complete_${listId}`)
-                                        .setLabel('Complete Task')
+                                        .setLabel('סיום משימה')
                                         .setStyle(ButtonStyle.Success),
                                     new ButtonBuilder()
                                         .setCustomId(`shared_todo_remove_${listId}`)
-                                        .setLabel('Remove Task')
+                                        .setLabel('מחיקת משימה')
                                         .setStyle(ButtonStyle.Danger)
                                 )
                             ]
@@ -337,17 +337,17 @@ export default {
                     }
                     
                     case 'addtask': {
-                        const listId = interaction.options.getString('list_id');
-                        const taskText = interaction.options.getString('task');
+                        const listId = interaction.options.getString('איידי_רשימה');
+                        const taskText = interaction.options.getString('משימה');
                         
                         const listData = await getOrCreateSharedList(listId);
                         
                         if (!listData) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Shared list not found.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'הרשימה המשותפת לא נמצאה.' });
                         }
                         
                         if (!listData.members.includes(userId)) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You don\'t have access to this list.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'אין לכם גישה לרשימה זו.' });
                         }
                         
                         const newTask = {
@@ -363,28 +363,28 @@ export default {
                         
                         return await InteractionHelper.safeEditReply(interaction, {
                             embeds: [
-                                successEmbed('Task Added', `Added "${taskText}" to the shared list "${listData.name}"`)
+                                successEmbed('המשימה נוספה', `המשימה "${taskText}" נוספה בהצלחה לרשימה המשותפת "${listData.name}"`)
                             ]
                         });
                     }
 
                     case 'remove': {
-                        const listId = interaction.options.getString('list_id');
-                        const taskNumber = interaction.options.getInteger('number');
+                        const listId = interaction.options.getString('איידי_רשימה');
+                        const taskNumber = interaction.options.getInteger('מספר');
 
                         const listData = await getOrCreateSharedList(listId);
 
                         if (!listData) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Shared list not found.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'הרשימה המשותפת לא נמצאה.' });
                         }
 
                         if (!listData.members.includes(userId)) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You don\'t have access to this list.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'אין לכם גישה לרשימה זו.' });
                         }
 
                         const taskIndex = listData.tasks.findIndex(task => task.id === taskNumber);
                         if (taskIndex === -1) {
-                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Task not found.' });
+                            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'המשימה לא נמצאה.' });
                         }
 
                         const [removedTask] = listData.tasks.splice(taskIndex, 1);
@@ -392,7 +392,7 @@ export default {
 
                         return await InteractionHelper.safeEditReply(interaction, {
                             embeds: [
-                                successEmbed('Task Removed', `Removed "${removedTask.text}" from the shared list "${listData.name}".`)
+                                successEmbed('המשימה נמחקה', `המשימה "${removedTask.text}" נמחקה מהרשימה המשותפת "${listData.name}".`)
                             ]
                         });
                     }
@@ -412,7 +412,7 @@ export default {
 
             switch (subcommand) {
                 case 'add': {
-                    const taskText = interaction.options.getString('task');
+                    const taskText = interaction.options.getString('משימה');
                     
                     const newTask = {
                         id: userData.nextId++,
@@ -427,8 +427,8 @@ export default {
                     return await InteractionHelper.safeEditReply(interaction, {
                         embeds: [
                             successEmbed(
-                                "Task Added",
-                                `Added "${taskText}" to your to-do list.`
+                                "המשימה נוספה",
+                                `המשימה "${taskText}" נוספה בהצלחה לרשימת המשימות שלך.`
                             ),
                         ],
                     });
@@ -437,34 +437,33 @@ export default {
                 case 'list': {
                     if (userData.tasks.length === 0) {
                         return await InteractionHelper.safeEditReply(interaction, {
-                            embeds: [successEmbed('Your to-do list is empty!', "Your To-Do List")],
+                            embeds: [successEmbed('רשימת המשימות שלך ריקה!', "רשימת המשימות שלי")],
                         });
                     }
 
                     const taskList = userData.tasks
                         .map(task => 
-                            `${task.completed ? '✅' : '📝'} #${task.id} ${task.text}` +
-                            `\`[${new Date(task.createdAt).toLocaleDateString()}\``
+                            `${task.completed ? '✅' : '📝'} #${task.id} ${task.text} \`[${new Date(task.createdAt).toLocaleDateString()}]\``
                         )
                         .join('\n');
 
                     return await InteractionHelper.safeEditReply(interaction, {
                         embeds: [
-                            successEmbed('Your To-Do List', taskList)
+                            successEmbed('רשימת המשימות שלי', taskList)
                         ],
                     });
                 }
 
                 case 'complete': {
-                    const taskNumber = interaction.options.getInteger('number');
+                    const taskNumber = interaction.options.getInteger('מספר');
                     const task = userData.tasks.find(t => t.id === taskNumber);
                     
                     if (!task) {
-                        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Task not found.' });
+                        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'המשימה לא נמצאה.' });
                     }
 
                     if (task.completed) {
-                        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Task #${task.id} is already completed.' });
+                        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `משימה #${task.id} כבר סומנה כבוצעה.` });
                     }
                     
                     task.completed = true;
@@ -472,17 +471,17 @@ export default {
                     
                     return await InteractionHelper.safeEditReply(interaction, {
                         embeds: [
-                            successEmbed('Task Completed', `Marked "${task.text}" as complete!`)
+                            successEmbed('המשימה בוצעה', `המשימה "${task.text}" סומנה כבוצעה בהצלחה!`)
                         ],
                     });
                 }
 
                 case 'remove': {
-                    const taskNumber = interaction.options.getInteger('number');
+                    const taskNumber = interaction.options.getInteger('מספר');
                     const taskIndex = userData.tasks.findIndex(t => t.id === taskNumber);
                     
                     if (taskIndex === -1) {
-                        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Task not found.' });
+                        return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'המשימה לא נמצאה.' });
                     }
                     
                     const [removedTask] = userData.tasks.splice(taskIndex, 1);
@@ -490,13 +489,13 @@ export default {
                     
                     return await InteractionHelper.safeEditReply(interaction, {
                         embeds: [
-                            successEmbed('Task Removed', `Removed "${removedTask.text}" from your to-do list.`)
+                            successEmbed('המשימה נמחקה', `המשימה "${removedTask.text}" נמחקה בהצלחה מרשימת המשימות שלך.`)
                         ],
                     });
                 }
 
                 default:
-                    return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Invalid subcommand.' });
+                    return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'תת-פקודה לא תקינה.' });
             }
         } catch (error) {
             logger.error(`Todo command execution failed`, {
