@@ -15,15 +15,16 @@ export default {
 
       if (oldMessage.content === newMessage.content) return;
 
+      // תרגום שורות המידע של הלוג לעברית
       const metaLines = [
-        formatLogLine('Channel', newMessage.channel ? `${newMessage.channel.name} ${newMessage.channel.toString()}` : 'Unknown'),
-        formatLogLine('Message ID', `\`${newMessage.id}\``),
-        formatLogLine('Message author', newMessage.author ? newMessage.author.toString() : 'Unknown'),
-        formatLogLine('Message created', `<t:${Math.floor(newMessage.createdTimestamp / 1000)}:R>`),
+        formatLogLine('ערוץ', newMessage.channel ? `${newMessage.channel.name} ${newMessage.channel.toString()}` : 'לא ידוע'),
+        formatLogLine('איידי הודעה', `\`${newMessage.id}\``),
+        formatLogLine('כותב ההודעה', newMessage.author ? newMessage.author.toString() : 'לא ידוע'),
+        formatLogLine('זמן יצירת ההודעה', `<t:${Math.floor(newMessage.createdTimestamp / 1000)}:R>`),
       ];
 
-      const oldContent = oldMessage.content || '*(empty message)*';
-      const newContent = newMessage.content || '*(empty message)*';
+      const oldContent = oldMessage.content || '*(הודעה ריקה)*';
+      const newContent = newMessage.content || '*(הודעה ריקה)*';
       const oldContentTruncated = oldContent.length > MAX_LOGGED_EDIT_CONTENT_LENGTH
         ? `${oldContent.substring(0, MAX_LOGGED_EDIT_CONTENT_LENGTH - 3)}...`
         : oldContent;
@@ -36,12 +37,13 @@ export default {
         guildId: newMessage.guild.id,
         eventType: EVENT_TYPES.MESSAGE_EDIT,
         data: {
-          title: 'Message edited',
+          // תרגום כותרות ושדות האמבד (Embed) שישלח לערוץ הלוגים
+          title: '📝 הודעה נערכה',
           lines: metaLines,
           quoted: true,
           fields: [
-            { name: 'Before', value: oldContentTruncated, inline: true },
-            { name: 'After', value: newContentTruncated, inline: true },
+            { name: 'לפני העריכה', value: oldContentTruncated, inline: true },
+            { name: 'אחרי העריכה (Combo IL bot)', value: newContentTruncated, inline: true },
           ],
           userId: newMessage.author?.id,
           channelId: newMessage.channel.id,
