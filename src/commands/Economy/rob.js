@@ -12,11 +12,11 @@ const FINE_PERCENTAGE = 0.1;
 export default {
     data: new SlashCommandBuilder()
         .setName('rob')
-        .setDescription('Attempt to rob another user (very risky)')
+        .setDescription('ניסיון לשדוד משתמש אחר (מסוכן מאוד)')
         .addUserOption(option =>
             option
                 .setName('user')
-                .setDescription('User to rob')
+                .setDescription('המשתמש שברצונך לשדוד')
                 .setRequired(true)
         ),
 
@@ -33,7 +33,7 @@ export default {
                 throw createError(
                     "Cannot rob self",
                     ErrorTypes.VALIDATION,
-                    "You cannot rob yourself.",
+                    "אינך יכול לשדוד את עצמך.",
                     { robberId, victimId: victimUser.id }
                 );
             }
@@ -42,7 +42,7 @@ export default {
                 throw createError(
                     "Cannot rob bot",
                     ErrorTypes.VALIDATION,
-                    "You cannot rob a bot.",
+                    "אינך יכול לשדוד בוט.",
                     { victimId: victimUser.id, isBot: true }
                 );
             }
@@ -54,7 +54,7 @@ export default {
                 throw createError(
                     "Failed to load economy data",
                     ErrorTypes.DATABASE,
-                    "Failed to load economy data. Please try again later.",
+                    "טעינת נתוני הכלכלה נכשלה. אנא נסה שוב מאוחר יותר.",
                     { robberId: !!robberData, victimId: !!victimData, guildId }
                 );
             }
@@ -69,7 +69,7 @@ export default {
                 throw createError(
                     "Robbery cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `You need to lay low. Wait **${hours}h ${minutes}m** before attempting another robbery.`,
+                    `אתה צריך לשמור על פרופיל נמוך כרגע. המתן עוד **${hours} שעות ו-${minutes} דקות** לפני שתנסה לשדוד שוב.`,
                     { remaining, hours, minutes, cooldownType: 'rob' }
                 );
             }
@@ -78,7 +78,7 @@ export default {
                 throw createError(
                     "Victim too poor",
                     ErrorTypes.VALIDATION,
-                    `${victimUser.username} is too poor. They need at least $500 cash to be worth robbing.`,
+                    `המשתמש ${victimUser.username} עני מדי. חייב להיות לו לפחות $500 במזומן כדי שיהיה שווה לשדוד אותו.`,
                     { victimWallet: victimData.wallet, required: 500 }
                 );
             }
@@ -92,8 +92,8 @@ export default {
                 return await InteractionHelper.safeEditReply(interaction, {
                     embeds: [
                         warningEmbed(
-                            'Robbery Blocked',
-                            `${victimUser.username} was prepared! Your attempt failed because they own a **Personal Safe**. You got away clean but didn't gain anything.`
+                            'השוד נחסם!',
+                            `${victimUser.username} היה מוכן! הניסיון שלך נכשל מכיוון שיש בבעלותו **כספת אישית**. הצלחת לברוח בלי להיתפס, אך לא הרווחת דבר.`
                         )
                     ],
                 });
@@ -109,8 +109,8 @@ export default {
                 victimData.wallet = (victimData.wallet || 0) - amountStolen;
 
                 resultEmbed = successEmbed(
-                    'Robbery Successful',
-                    `You successfully stole **$${amountStolen.toLocaleString()}** from ${victimUser.username}!`
+                    'השוד הצליח!',
+                    `שדדת בהצלחה **$${amountStolen.toLocaleString()}** מהמשתמש ${victimUser.username}!`
                 );
             } else {
                 const fineAmount = Math.floor((robberData.wallet || 0) * FINE_PERCENTAGE);
@@ -123,8 +123,8 @@ export default {
 
                 resultEmbed = buildUserErrorEmbed(
                     'unknown',
-                    `You failed the robbery and were caught! You were fined **$${fineAmount.toLocaleString()}** of your own cash.`,
-                    { titleOverride: 'Robbery Failed' }
+                    `נכשלת בניסיון השוד ונתפסת על חם! נקנסת בסך של **$${fineAmount.toLocaleString()}** מהמזומנים שלך.`,
+                    { titleOverride: 'השוד נכשל!' }
                 );
             }
 
@@ -136,17 +136,17 @@ export default {
             resultEmbed
                 .addFields(
                     {
-                        name: `Your New Cash (${interaction.user.username})`,
+                        name: `המזומן החדש שלך (${interaction.user.username})`,
                         value: `$${robberData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: `Victim's New Cash (${victimUser.username})`,
+                        name: `המזומן החדש של הקורבן (${victimUser.username})`,
                         value: `$${victimData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                 )
-                .setFooter({ text: `Next robbery available in 4 hours.` });
+                .setFooter({ text: `ניסיון השוד הבא שלך יהיה זמין בעוד 4 שעות.` });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [resultEmbed] });
     }, { command: 'rob' })
