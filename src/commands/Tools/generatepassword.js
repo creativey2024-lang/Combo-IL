@@ -2,29 +2,30 @@ import { getColor } from '../../config/bot.js';
 import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
-import { handleInteractionError } from '../../utils/errorHandler.js';
+import { handleInteractionError, replyUserError, ErrorTypes } from '../../utils/errorHandler.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('generatepassword')
-        .setDescription('Generate a strong, random password')
+        .setDescription('יצירת סיסמה חזקה ואקראית')
         .addIntegerOption(option =>
             option.setName('length')
-                .setDescription('Password length (default: 16, max: 50)')
+                .setDescription('אורך הסיסמה (ברירת מחדל: 16, מקסימום: 50)')
                 .setMinValue(8)
                 .setMaxValue(50)
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('uppercase')
-                .setDescription('Include uppercase letters (A-Z)')
+                .setDescription('האם לכלול אותיות גדולות באנגלית (A-Z)')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('numbers')
-                .setDescription('Include numbers (0-9)')
+                .setDescription('האם לכלול מספרים (0-9)')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('symbols')
-                .setDescription('Include symbols (!@#$%^&*)')
+                .setDescription('האם לכלול סימנים מיוחדים (!@#$%^&*)')
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -43,14 +44,17 @@ export default {
 
         try {
             const length = interaction.options.getInteger('length') || 16;
-                const includeUppercase = interaction.options.getBoolean('uppercase') ?? true;
-                const includeNumbers = interaction.options.getBoolean('numbers') ?? true;
-                const includeSymbols = interaction.options.getBoolean('symbols') ?? true;
+            const includeUppercase = interaction.options.getBoolean('uppercase') ?? true;
+            const includeNumbers = interaction.options.getBoolean('numbers') ?? true;
+            const includeSymbols = interaction.options.getBoolean('symbols') ?? true;
                 
-                if (length < 8 || length > 50) {
-                    await replyUserError(interaction, { type: ErrorTypes.VALIDATION, message: '\'Password must be 8-50 characters. You provided:\' + length' });
-                    return;
-                }
+            if (length < 8 || length > 50) {
+                await replyUserError(interaction, { 
+                    type: ErrorTypes.VALIDATION, 
+                    message: 'אורך הסיסמה חייב להיות בין 8 ל-50 תווים. האורך שסיפקת: ' + length 
+                });
+                return;
+            }
             
             const lowercase = 'abcdefghijklmnopqrstuvwxyz';
             const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -89,9 +93,9 @@ export default {
                 password = password.substring(0, randomIndex) + randomSymbol + password.substring(randomIndex + 1);
             }
             
-            let strength = 'Weak';
+            let strength = 'חלשה';
             let strengthEmoji = '🔴';
-let strengthColor = getColor('error');
+            let strengthColor = getColor('error');
             
             const hasLower = /[a-z]/.test(password);
             const hasUpper = /[A-Z]/.test(password);
@@ -114,29 +118,36 @@ let strengthColor = getColor('error');
             if (hasSymbol) score *= 1.3;
             
             if (score > 80) {
-                strength = 'Very Strong';
+                strength = 'חזקה מאוד';
                 strengthEmoji = '🟢';
-strengthColor = getColor('success');
+                strengthColor = getColor('success');
             } else if (score > 60) {
-                strength = 'Strong';
+                strength = 'חזקה';
                 strengthEmoji = '🟢';
-strengthColor = getColor('success');
+                strengthColor = getColor('success');
             } else if (score > 40) {
-                strength = 'Good';
+                strength = 'טובה';
                 strengthEmoji = '🟡';
-strengthColor = getColor('warning');
+                strengthColor = getColor('warning');
             } else if (score > 20) {
-                strength = 'Weak';
+                strength = 'חלשה';
                 strengthEmoji = '🟠';
-strengthColor = getColor('warning');
+                strengthColor = getColor('warning');
             }
             
+            // יצירת רשימת סוגי תווים בעברית להצגה באמבד
+            const containsArray = [];
+            if (hasLower) containsArray.push('אותיות קטנות');
+            if (hasUpper) containsArray.push('אותיות גדולות');
+            if (hasNumber) containsArray.push('מספרים');
+            if (hasSymbol) containsArray.push('סימנים מיוחדים');
+            
             const embed = successEmbed(
-                '🔑 Generated Password',
-                `**Password:** ||\`${password}\`||\n` +
-                `**Length:** ${password.length} characters\n` +
-                `**Strength:** ${strengthEmoji} ${strength}\n` +
-                `**Contains:** ${hasLower ? 'Lowercase' : ''}${hasUpper ? ', Uppercase' : ''}${hasNumber ? ', Numbers' : ''}${hasSymbol ? ', Symbols' : ''}`
+                '🔑 סיסמה נוצרה בהצלחה',
+                `**הסיסמה שלך:** ||\`${password}\`||\n` +
+                `**אורך:** ${password.length} תווים\n` +
+                `**חוזק סיסמה:** ${strengthEmoji} ${strength}\n` +
+                `**מכילה:** ${containsArray.join(', ')}`
             ).setColor(strengthColor);
             
             await InteractionHelper.safeEditReply(interaction, { 
