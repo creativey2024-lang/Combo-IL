@@ -38,7 +38,7 @@ function buildCategoryChoices(client) {
 
 async function ensureManageGuild(interaction) {
   if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-    await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'You need the **Manage Server** permission to manage commands.' });
+    await replyUserError(interaction, { type: ErrorTypes.PERMISSION, message: 'יש צורך בהרשאת **ניהול שרת** כדי לנהל פקודות.' });
     return false;
   }
 
@@ -48,32 +48,32 @@ async function ensureManageGuild(interaction) {
 export default {
   data: new SlashCommandBuilder()
     .setName('commands')
-    .setDescription('Enable or disable bot commands and categories for this server')
+    .setDescription('הפעלה או השבתה של פקודות ומערכות הבוט עבור שרת זה')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .setDMPermission(false)
     .addSubcommand((subcommand) =>
       subcommand
         .setName('dashboard')
-        .setDescription('Open the interactive command access dashboard'),
+        .setDescription('פתיחת לוח הבקרה האינטראקטיבי לניהול גישה לפקודות'),
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName('disable')
-        .setDescription('Disable a command or entire category')
+        .setDescription('השבתת פקודה בודדת או קטגוריה שלמה')
         .addStringOption((option) =>
           option
             .setName('scope')
-            .setDescription('Disable a single command or a whole category')
+            .setDescription('בחרו האם להשבית פקודה בודדת או קטגוריה שלמה')
             .setRequired(true)
             .addChoices(
-              { name: 'Category', value: 'category' },
-              { name: 'Command', value: 'command' },
+              { name: 'קטגוריה', value: 'category' },
+              { name: 'פקודה', value: 'command' },
             ),
         )
         .addStringOption((option) =>
           option
             .setName('target')
-            .setDescription('Category or command name')
+            .setDescription('שם הקטגוריה או הפקודה')
             .setRequired(true)
             .setAutocomplete(true),
         ),
@@ -81,21 +81,21 @@ export default {
     .addSubcommand((subcommand) =>
       subcommand
         .setName('enable')
-        .setDescription('Enable a command or entire category')
+        .setDescription('הפעלת פקודה בודדת או קטגוריה שלמה')
         .addStringOption((option) =>
           option
             .setName('scope')
-            .setDescription('Enable a single command or a whole category')
+            .setDescription('בחרו האם להפעיל פקודה בודדת או קטגוריה שלמה')
             .setRequired(true)
             .addChoices(
-              { name: 'Category', value: 'category' },
-              { name: 'Command', value: 'command' },
+              { name: 'קטגוריה', value: 'category' },
+              { name: 'פקודה', value: 'command' },
             ),
         )
         .addStringOption((option) =>
           option
             .setName('target')
-            .setDescription('Category or command name')
+            .setDescription('שם הקטגוריה או הפקודה')
             .setRequired(true)
             .setAutocomplete(true),
         ),
@@ -119,25 +119,22 @@ export default {
       return interaction.respond(choices);
     }
 
-    // For command scope, get all commands including subcommands
+    // עבור פקודות, שליפת כל הפקודות כולל תתי-פקודות
     const registry = buildCommandRegistry(interaction.client);
     const allCommands = [];
     
-    // Check if the query matches a category name - if so, show commands from that category
+    // בדיקה האם החיפוש תואם לשם של קטגוריה - אם כן, נציג את הפקודות מאותה קטגוריה
     const matchedCategory = resolveCategoryChoice(interaction.client, query);
     
     if (matchedCategory) {
-      // Show commands from the matched category
       for (const command of matchedCategory.commands) {
         if (!isProtectedCommand(command.name)) {
           allCommands.push(command.name);
         }
       }
     } else {
-      // Show all commands
       for (const category of registry.values()) {
         for (const command of category.commands) {
-          // Include both base commands and subcommands
           if (!isProtectedCommand(command.name)) {
             allCommands.push(command.name);
           }
@@ -197,7 +194,7 @@ export default {
             });
             await replyUserError(componentInteraction, {
               type: ErrorTypes.UNKNOWN,
-              message: error.message || 'Failed to update command access.',
+              message: error.message || 'עדכון הגישה לפקודה נכשל.',
             }).catch(() => {});
           }
         });
@@ -228,7 +225,7 @@ export default {
       if (scope === 'category') {
         const category = resolveCategoryChoice(client, target);
         if (!category) {
-          return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'No category matched \\`${target}\\`. Use \\`/commands dashboard\\` to browse categories.' });
+          return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `לא נמצאה קטגוריה תואמת עבור \`${target}\`. השתמשו ב-\`/commands dashboard\` כדי לעיין בקטגוריות.` });
         }
 
         if (isDisable) {
@@ -236,8 +233,8 @@ export default {
           return InteractionHelper.safeEditReply(interaction, {
             embeds: [
               successEmbed(
-                'Category Disabled',
-                `All **${category.displayName}** commands are now disabled.\nProtected commands remain available.`,
+                'הקטגוריה הושבתה',
+                `כל הפקודות תחת קטגוריית **${category.displayName}** מושבתות כעת.\nפקודות מערכת מוגנות יישארו זמינות.`,
               ),
             ],
           });
@@ -245,7 +242,7 @@ export default {
 
         await enableCategory(client, interaction.guildId, category.key);
         return InteractionHelper.safeEditReply(interaction, {
-          embeds: [successEmbed('Category Enabled', `**${category.displayName}** commands are now enabled (except individually disabled commands).`)],
+          embeds: [successEmbed('הקטגוריה הופעלה', `כל הפקודות תחת קטגוריית **${category.displayName}** פעילות כעת (למעט פקודות שהושבתו באופן פרטני).`)],
         });
       }
 
@@ -253,13 +250,13 @@ export default {
       if (isDisable) {
         await disableCommand(client, interaction.guildId, commandName);
         return InteractionHelper.safeEditReply(interaction, {
-          embeds: [successEmbed('Command Disabled', `\`/${commandName}\` is now disabled in this server.`)],
+          embeds: [successEmbed('הפקודה הושבתה', `הפקודה \`/${commandName}\` מושבתת כעת בשרת זה.`)],
         });
       }
 
       await enableCommand(client, interaction.guildId, commandName);
       return InteractionHelper.safeEditReply(interaction, {
-        embeds: [successEmbed('Command Enabled', `\`/${commandName}\` is now enabled in this server.`)],
+        embeds: [successEmbed('הפקודה הופעלה', `הפקודה \`/${commandName}\` פעילה כעת בשרת זה.`)],
       });
     } catch (error) {
       logger.error('commands command failed', {
