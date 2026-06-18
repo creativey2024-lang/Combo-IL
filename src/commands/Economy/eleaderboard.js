@@ -7,7 +7,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("eleaderboard")
-        .setDescription("View the server's top 10 richest users.")
+        .setDescription("הצגת 10 המשתמשים העשירים ביותר בשרת.")
         .setDMPermission(false),
 
     execute: withErrorHandling(async (interaction, config, client) => {
@@ -30,7 +30,7 @@ export default {
                 throw createError(
                     "No economy data found",
                     ErrorTypes.VALIDATION,
-                    "No economy data found for this server."
+                    "לא נמצאו נתוני כלכלה עבור שרת זה."
                 );
             }
 
@@ -63,7 +63,7 @@ export default {
                 const emoji = rankEmoji[i] || `**#${rank}**`;
 
                 leaderboardEntries.push(
-                    `${emoji} <@${user.userId}> - 🏦 ${user.net_worth.toLocaleString()}`,
+                    `${emoji} <@${user.userId}> - 🏦 $${user.net_worth.toLocaleString()}`,
                 );
             }
 
@@ -75,12 +75,12 @@ export default {
 
             const description = leaderboardEntries.length > 0
                 ? leaderboardEntries.join("\n")
-                : "No economy data is available for this server yet.";
+                : "אין עדיין נתוני כלכלה זמינים עבור שרת זה.";
 
             const embed = createEmbed({
-                title: `Economy Leaderboard`,
+                title: `🏆 טבלת המובילים - כלכלה`,
                 description,
-                footer: `Your Rank: ${userRank > 0 ?`#${userRank}`: "No ranking data available"}`,
+                footer: `הדירוג שלך: ${userRank > 0 ? `#${userRank}` : "אין נתוני דירוג זמינים"}`,
             });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
