@@ -9,22 +9,22 @@ import reportSetchannel from './modules/report_setchannel.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('report')
-        .setDescription('Report a user to server staff, or configure where reports are sent.')
+        .setDescription('דיווח על משתמש לצוות השרת, או הגדרת הערוץ אליו יישלחו הדיווחים.')
         .setDMPermission(false)
         .addSubcommand(subcommand =>
             subcommand
                 .setName('file')
-                .setDescription('Report a user to the server moderation team.')
+                .setDescription('שליחת דיווח על משתמש לצוות הניהול של השרת.')
                 .addUserOption(option =>
                     option
-                        .setName('user')
-                        .setDescription('The user you want to report.')
+                        .setName('משתמש')
+                        .setDescription('המשתמש שברצונכם לדווח עליו.')
                         .setRequired(true),
                 )
                 .addStringOption(option =>
                     option
-                        .setName('reason')
-                        .setDescription('The reason for the report (be detailed).')
+                        .setName('סיבה')
+                        .setDescription('סיבת הדיווח (מומלץ לפרט ככל הניתן).')
                         .setRequired(true)
                         .setMaxLength(500),
                 ),
@@ -32,11 +32,11 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setchannel')
-                .setDescription('Set the channel where user reports are sent. (Manage Server required)')
+                .setDescription('הגדרת הערוץ שבו יתקבלו הדיווחים (דורש הרשאת ניהול שרת).')
                 .addChannelOption(option =>
                     option
-                        .setName('channel')
-                        .setDescription('The text channel to receive reports.')
+                        .setName('ערוץ')
+                        .setDescription('ערוץ הטקסט שבו יתקבלו הדיווחים החדשים.')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(true),
                 ),
@@ -55,7 +55,7 @@ export default {
                 return await reportSetchannel.execute(interaction, config, client);
             }
 
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Unknown subcommand.' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'תת-פקודה לא מוכרת.' });
         } catch (error) {
             logger.error('report command error:', error);
             await handleInteractionError(interaction, error, { commandName: 'report', source: 'report_command' });
