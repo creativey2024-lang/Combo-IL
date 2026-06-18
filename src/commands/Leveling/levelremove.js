@@ -4,22 +4,22 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { checkUserPermissions } from '../../utils/permissionGuard.js';
 import { removeLevels, getUserLevelData, getLevelingConfig } from '../../services/leveling.js';
 import { createEmbed } from '../../utils/embeds.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
   data: new SlashCommandBuilder()
     .setName('levelremove')
-    .setDescription('Remove levels from a user')
+    .setDescription('הורדת רמות למשתמש בשרת')
     .addUserOption((option) =>
       option
         .setName('user')
-        .setDescription('The user to remove levels from')
+        .setDescription('המשתמש שברצונך להוריד לו רמות')
         .setRequired(true)
     )
     .addIntegerOption((option) =>
       option
         .setName('levels')
-        .setDescription('Number of levels to remove')
+        .setDescription('מספר הרמות שברצונך להוריד')
         .setRequired(true)
         .setMinValue(1)
     )
@@ -34,7 +34,7 @@ export default {
       const hasPermission = await checkUserPermissions(
         interaction,
         PermissionFlagsBits.ManageGuild,
-        'You need ManageGuild permission to use this command.'
+        'אתה זקוק להרשאת **ניהול שרת** כדי להשתמש בפקודה זו.'
       );
       if (!hasPermission) return;
 
@@ -44,7 +44,7 @@ export default {
           embeds: [
             new EmbedBuilder()
               .setColor('#f1c40f')
-              .setDescription('The leveling system is currently disabled on this server.')
+              .setDescription('מערכת הרמות מושבתת כרגע בשרת זה.')
           ],
           flags: MessageFlags.Ephemeral
         });
@@ -59,7 +59,7 @@ export default {
         throw new TitanBotError(
           `User ${targetUser.id} not found in this guild`,
           ErrorTypes.USER_INPUT,
-          'The specified user is not in this server.'
+          'המשתמש שצוין אינו נמצא בשרת זה.'
         );
       }
 
@@ -68,7 +68,7 @@ export default {
         throw new TitanBotError(
           `User ${targetUser.id} is already at minimum level`,
           ErrorTypes.VALIDATION,
-          `${targetUser.tag} is already at level 0 and cannot have levels removed.`
+          `המשתמש ${targetUser.tag} כבר נמצא ברמה 0 ולא ניתן להוריד לו רמות נוספות.`
         );
       }
 
@@ -77,8 +77,8 @@ export default {
       await InteractionHelper.safeEditReply(interaction, {
         embeds: [
           createEmbed({
-            title: 'Levels Removed',
-            description: `Successfully removed ${levelsToRemove} levels from ${targetUser.tag}.\n**New Level:** ${updatedData.level}`,
+            title: '📉 רמות הוסרו בהצלחה',
+            description: `הוסרו בהצלחה ${levelsToRemove} רמות מהמשתמש ${targetUser.tag}.\n**הרמה החדשה:** ${updatedData.level}`,
             color: 'success'
           })
         ]
