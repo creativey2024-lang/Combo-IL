@@ -28,17 +28,17 @@ const WIZARD_BUTTON_ID = 'config_wizard';
 const activeWizardSessions = new Set();
 
 const DM_DISABLED_HELP = [
-    '1. Right-click this server\'s name (mobile: tap the server name at the top).',
-    '2. Open **Privacy Settings**.',
-    '3. Turn on **Allow direct messages from server members**.',
-    '4. Click **Start Setup Wizard** again.',
+    '1. לחצו קליק ימני על שם השרת הנוכחי (בנייד: לחצו על שם השרת בחלק העליון).',
+    '2. היכנסו ל-**הגדרות פרטיות (Privacy Settings)**.',
+    '3. הפעילו את האפשרות **אפשר הודעות פרטיות מחברי השרת (Allow direct messages from server members)**.',
+    '4. לחצו שוב על כפתור **הפעלת אשף ההגדרות**.',
 ].join('\n');
 
 async function notifyWizardStarted(buttonInteraction) {
     await buttonInteraction.followUp({
         embeds: [infoEmbed(
-            'Setup Wizard Started',
-            'Check your DMs — I sent you the first setup question there.\n\nAnswer each question in that DM. Type `skip` to keep the current value.',
+            'אשף ההגדרות הופעל',
+            'בדקו את ההודעות הפרטיות שלכם (DMs) — שלחתי לכם שם את שאלת ההגדרה הראשונה.\n\nענו על כל שאלה בהודעה פרטית חוזרת. הקלידו `skip` כדי לשמור על הערך הנוכחי.',
         )],
         flags: MessageFlags.Ephemeral,
     }).catch(() => {});
@@ -47,13 +47,13 @@ async function notifyWizardStarted(buttonInteraction) {
 async function notifyWizardDmBlocked(buttonInteraction) {
     await replyUserError(buttonInteraction, {
         type: ErrorTypes.USER_INPUT,
-        message: `I couldn't send you a DM. Enable DMs from this server, then try again.\n\n${DM_DISABLED_HELP}`,
+        message: `לא הצלחתי לשלוח לכם הודעה פרטית. אנא אפשרו קבלת הודעות פרטיות (DMs) משרת זה ונסו שוב.\n\n${DM_DISABLED_HELP}`,
     }).catch(() => {});
 }
 
 function formatChannelMention(guild, channelId) {
     if (!channelId) {
-        return '`Not set`';
+        return '`לא הוגדר`';
     }
     const channel = guild.channels.cache.get(channelId);
     return channel ? `<#${channelId}>` : `#${channelId}`;
@@ -61,7 +61,7 @@ function formatChannelMention(guild, channelId) {
 
 function formatRoleMention(guild, roleId) {
     if (!roleId) {
-        return '`Not set`';
+        return '`לא הוגדר`';
     }
     const role = guild.roles.cache.get(roleId);
     return role ? `<@&${roleId}>` : `@${roleId}`;
@@ -70,10 +70,10 @@ function formatRoleMention(guild, roleId) {
 function getBotPresenceText() {
     const activity = botConfig.presence?.activities?.[0];
     if (!activity?.name) {
-        return '`Not configured`';
+        return '`לא מוגדר`';
     }
 
-    const typeLabels = ['Playing', 'Streaming', 'Listening to', 'Watching', '', 'Competing in'];
+    const typeLabels = ['משחק ב-', 'משדר את-', 'מקשיב ל-', 'צופה ב-', '', 'מתחרה ב-'];
     const typeLabel = typeLabels[activity.type];
     if (!typeLabel) {
         return activity.name;
@@ -85,8 +85,8 @@ function getBotPresenceText() {
 function getThemeColorLines() {
     const colors = botConfig.embeds.colors;
     return [
-        `🎨 Primary \`${colors.primary}\` · Success \`${colors.success}\``,
-        `⚠️ Warning \`${colors.warning}\` · Error \`${colors.error}\``,
+        `🎨 ראשי \`${colors.primary}\` · הצלחה \`${colors.success}\``,
+        `⚠️ אזהרה \`${colors.warning}\` · שגיאה \`${colors.error}\``,
     ].join('\n');
 }
 
@@ -94,49 +94,49 @@ function buildDashboardEmbed(config, guild) {
     const setupDone = config.setupWizardCompleted;
 
     return createEmbed({
-        title: '⚙️ Server Configuration',
-        description: `Core settings for **${guild.name}**. Pick an option below or run the setup wizard.`,
+        title: '⚙️ הגדרות תצורת השרת',
+        description: `הגדרות הליבה עבור **${guild.name}**. בחרו אפשרות מהתפריט למטה או הפעילו את אשף ההגדרות המודרך.`,
         color: 'info',
         fields: [
             {
-                name: '⌨️ Server Prefix',
+                name: '⌨️ קידומת השרת (Prefix)',
                 value: `\`${config.prefix || guild.client.config.bot.prefix || '!'}\``,
                 inline: true,
             },
             {
-                name: '🛡️ Moderator Role',
+                name: '🛡️ תפקיד מנהל (Moderator Role)',
                 value: formatRoleMention(guild, config.modRole),
                 inline: true,
             },
             {
-                name: '📋 Log Channel',
+                name: '📋 ערוץ לוגים (Log Channel)',
                 value: formatChannelMention(guild, config.logging?.channels?.audit),
                 inline: true,
             },
             {
-                name: '💚 Bot Status',
+                name: '💚 סטטוס הבוט',
                 value: getBotPresenceText(),
                 inline: false,
             },
             {
-                name: '🎨 Embed Theme',
-                value: `${getThemeColorLines()}\n-# Colors are set in bot config and apply globally.`,
+                name: '🎨 עיצוב הודעות (Embed Theme)',
+                value: `${getThemeColorLines()}\n-# הצבעים מוגדרים בקובץ התצורה הכללי של הבוט ומשפיעים גלובלית.`,
                 inline: false,
             },
             {
-                name: '⚡ Command Access',
-                value: 'Use `/commands dashboard` to enable or disable commands and subcommands.',
+                name: '⚡ גישה לפקודות',
+                value: 'השתמשו בפקודה \`/commands dashboard\` כדי להפעיל או להשבית פקודות ותתי-פקודות.',
                 inline: false,
             },
             {
-                name: `${setupDone ? '✅' : '📝'} Setup`,
+                name: `${setupDone ? '✅' : '📝'} אשף הגדרה`,
                 value: setupDone
-                    ? 'Setup wizard completed — re-run anytime to update settings.'
-                    : 'Run the setup wizard to configure your server quickly.',
+                    ? 'אשף ההגדרות הושלם בהצלחה — ניתן להריץ אותו שוב בכל עת כדי לעדכן הגדרות.'
+                    : 'הפעילו את אשף ההגדרות כדי להגדיר את השרת שלכם במהירות.',
                 inline: false,
             },
         ],
-        footer: 'Dashboard closes after 10 minutes of inactivity',
+        footer: 'לוח הבקרה ייסגר לאחר 10 דקות של חוסר פעילות',
     });
 }
 
@@ -144,21 +144,21 @@ function buildSettingsSelect(guildId) {
     return new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
             .setCustomId(`${DASHBOARD_CUSTOM_ID}:${guildId}`)
-            .setPlaceholder('⚙️ Select a setting to edit...')
+            .setPlaceholder('⚙️ בחרו הגדרה לעריכה...')
             .addOptions(
                 new StringSelectMenuOptionBuilder()
-                    .setLabel('Server Prefix')
-                    .setDescription('Change the text command prefix')
+                    .setLabel('קידומת השרת (Prefix)')
+                    .setDescription('שינוי קידומת הטקסט עבור פקודות רגילות')
                     .setValue('prefix')
                     .setEmoji('⌨️'),
                 new StringSelectMenuOptionBuilder()
-                    .setLabel('Moderator Role')
-                    .setDescription('Role used for moderation commands')
+                    .setLabel('תפקיד מנהל (Moderator Role)')
+                    .setDescription('התפקיד המורשה להשתמש בפקודות ניהול ומודרציה')
                     .setValue('modRole')
                     .setEmoji('🛡️'),
                 new StringSelectMenuOptionBuilder()
-                    .setLabel('Log Channel')
-                    .setDescription('Channel for system log messages')
+                    .setLabel('ערוץ לוגים (Log Channel)')
+                    .setDescription('הערוץ אליו יישלחו לוגים ועדכוני מערכת')
                     .setValue('logChannelId')
                     .setEmoji('📋'),
             ),
@@ -169,7 +169,7 @@ function buildButtonRow(config, guildId) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`${WIZARD_BUTTON_ID}:${guildId}`)
-            .setLabel(config.setupWizardCompleted ? 'Re-run Setup Wizard' : 'Start Setup Wizard')
+            .setLabel(config.setupWizardCompleted ? 'הפעלה מחדש של אשף ההגדרות' : 'הפעלת אשף ההגדרות')
             .setEmoji('📝')
             .setStyle(config.setupWizardCompleted ? ButtonStyle.Secondary : ButtonStyle.Success),
     );
@@ -193,7 +193,7 @@ function extractId(value) {
 async function askQuestion(dmChannel, userId, prompt, stepNumber, totalSteps) {
     await dmChannel.send({
         embeds: [createEmbed({
-            title: `Setup Question ${stepNumber}/${totalSteps}`,
+            title: `שאלת הגדרה ${stepNumber}/${totalSteps}`,
             description: prompt,
             color: 'primary',
         })],
@@ -207,7 +207,7 @@ async function askQuestion(dmChannel, userId, prompt, stepNumber, totalSteps) {
 
     if (!collected || !collected.size) {
         await dmChannel.send({
-            embeds: [buildUserErrorEmbed(ErrorTypes.RATE_LIMIT, 'You did not answer in time. Run the setup wizard again when ready.')],
+            embeds: [buildUserErrorEmbed(ErrorTypes.RATE_LIMIT, 'לא התקבלה תשובה בזמן. אנא הפעילו את אשף ההגדרות מחדש כשתהיו מוכנים.')],
         });
         return null;
     }
@@ -215,7 +215,7 @@ async function askQuestion(dmChannel, userId, prompt, stepNumber, totalSteps) {
     const answer = collected.first().content.trim();
     if (answer.toLowerCase() === 'cancel') {
         await dmChannel.send({
-            embeds: [infoEmbed('Setup Cancelled', 'Setup wizard stopped. Your saved answers are still applied.')],
+            embeds: [infoEmbed('ההגדרה בוטלה', 'אשף ההגדרות הופסק. תשובות שכבר נשמרו יישארו בתוקף.')],
         });
         return { cancelled: true };
     }
@@ -225,32 +225,32 @@ async function askQuestion(dmChannel, userId, prompt, stepNumber, totalSteps) {
 
 function formatSavedAck(key, value, guild) {
     if (key === 'prefix') {
-        return `Server prefix saved as \`${value}\`.`;
+        return `קידומת השרת נשמרה כ-\`${value}\`.`;
     }
 
     if (key === 'logChannelId') {
         if (value === null) {
-            return 'Log channel cleared.';
+            return 'ערוץ הלוגים הוסר.';
         }
         const channel = guild.channels.cache.get(value);
-        return `Log channel saved as ${channel ?? `<#${value}>`}.`;
+        return `ערוץ הלוגים נשמר כ-${channel ?? `<#${value}>`}.`;
     }
 
     if (key === 'modRole') {
         if (value === null) {
-            return 'Moderator role cleared.';
+            return 'תפקיד המנהל הוסר.';
         }
         const role = guild.roles.cache.get(value);
-        return `Moderator role saved as ${role ?? `<@&${value}>`}.`;
+        return `תפקיד המנהל נשמר כ-${role ?? `<@&${value}>`}.`;
     }
 
-    return 'Setting saved.';
+    return 'ההגדרה נשמרה בהצלחה.';
 }
 
 async function validateGuildChannelId(guild, channelId) {
     const channel = guild.channels.cache.get(channelId) ?? await guild.channels.fetch(channelId).catch(() => null);
     if (!channel || !channel.isTextBased()) {
-        throw new Error('That channel was not found in this server or is not a text channel.');
+        throw new Error('הערוץ שצוין לא נמצא בשרת זה או שאינו ערוץ טקסט.');
     }
     return channel.id;
 }
@@ -258,7 +258,7 @@ async function validateGuildChannelId(guild, channelId) {
 async function validateGuildRoleId(guild, roleId) {
     const role = guild.roles.cache.get(roleId) ?? await guild.roles.fetch(roleId).catch(() => null);
     if (!role) {
-        throw new Error('That role was not found in this server.');
+        throw new Error('התפקיד שצוין לא נמצא בשרת זה.');
     }
     return role.id;
 }
@@ -274,7 +274,7 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
 
     if (activeWizardSessions.has(user.id)) {
         await buttonInteraction.followUp({
-            embeds: [warningEmbed('Setup Already Running', 'You already have a setup wizard open in your DMs. Reply there to continue, or type `cancel` to stop it.')],
+            embeds: [warningEmbed('אשף ההגדרות כבר פעיל', 'כבר קיים אשף הגדרות פעיל בהודעות הפרטיות שלכם. ענו שם כדי להמשיך, או הקלידו `cancel` כדי לעצור אותו.')],
             flags: MessageFlags.Ephemeral,
         }).catch(() => {});
         return;
@@ -299,40 +299,40 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
     const prompts = [
         {
             key: 'prefix',
-            skipMessage: 'Keeping the current server prefix.',
-            question: 'What command prefix should this server use?\nCurrent: `' + (config.prefix || guild.client.config.bot.prefix || '!') + '`\nReply `skip` to keep it, or `cancel` to stop.',
+            skipMessage: 'שומר על קידומת השרת הנוכחית.',
+            question: 'באיזו קידומת (Prefix) פקודות הטקסט של השרת צריכות להשתמש?\nנוכחי: `' + (config.prefix || guild.client.config.bot.prefix || '!') + '`\nהשיבו `skip` כדי להשאיר את המצב הקיים, או `cancel` כדי לעצור.',
             parse: async (answer) => {
                 const normalized = answer.trim();
                 if (normalized.toLowerCase() === 'skip') return undefined;
                 if (/\s/.test(normalized) || normalized.length < 1 || normalized.length > 10) {
-                    throw new Error('Prefix must be 1-10 characters with no spaces.');
+                    throw new Error('הקידומת חייבת להיות באורך של 1 עד 10 תווים וללא רווחים.');
                 }
                 return normalized;
             },
         },
         {
             key: 'logChannelId',
-            skipMessage: 'Keeping the current log channel.',
-            question: 'Which channel should receive bot logs?\nSend a channel mention, channel ID, `none` to clear, `skip` to keep the current value, or `cancel` to stop.',
+            skipMessage: 'שומר על ערוץ הלוגים הנוכחי.',
+            question: 'איזה ערוץ צריך לקבל את לוגי הבוט?\nשלחו תיוג של ערוץ, מזהה ערוץ (ID), הקלידו `none` כדי להסיר, `skip` כדי לשמור על הערך הנוכחי, או `cancel` כדי לעצור.',
             parse: async (answer) => {
                 const normalized = answer.trim();
                 if (normalized.toLowerCase() === 'skip') return undefined;
                 if (normalized.toLowerCase() === 'none') return null;
                 const id = extractId(normalized);
-                if (!id) throw new Error('Provide a valid channel mention or ID from this server.');
+                if (!id) throw new Error('אנא ספקו תיוג ערוץ תקין או מזהה ערוץ (ID) מתוך שרת זה.');
                 return validateGuildChannelId(guild, id);
             },
         },
         {
             key: 'modRole',
-            skipMessage: 'Keeping the current moderator role.',
-            question: 'What role should moderators have?\nSend a role mention, role ID, `none` to clear, `skip` to keep the current value, or `cancel` to stop.',
+            skipMessage: 'שומר על תפקיד המנהל הנוכחי.',
+            question: 'איזה תפקיד (Role) ייחשב כתפקיד מנהל (Moderator)?\nשלחו תיוג של תפקיד, מזהה תפקיד (ID), הקלידו `none` כדי להסיר, `skip` כדי לשמור על הערך הנוכחי, או `cancel` כדי לעצור.',
             parse: async (answer) => {
                 const normalized = answer.trim();
                 if (normalized.toLowerCase() === 'skip') return undefined;
                 if (normalized.toLowerCase() === 'none') return null;
                 const id = extractId(normalized);
-                if (!id) throw new Error('Provide a valid role mention or ID from this server.');
+                if (!id) throw new Error('אנא ספקו תיוג תפקיד תקין או מזהה תפקיד (ID) מתוך שרת זה.');
                 return validateGuildRoleId(guild, id);
             },
         },
@@ -346,8 +346,8 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
         try {
             await dmChannel.send({
                 embeds: [createEmbed({
-                    title: '📝 Setup Wizard',
-                    description: 'Answer each question in this DM.\n\n• Type `skip` to keep the current value\n• Type `cancel` to stop the wizard',
+                    title: '📝 אשף ההגדרות',
+                    description: 'ענו על כל שאלה בהודעות פרטיות אלו.\n\n• הקלידו `skip` כדי להשאיר את הערך הנוכחי\n• הקלידו `cancel` כדי לעצור את האשף',
                     color: 'info',
                 })],
             });
@@ -389,13 +389,13 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
 
                     if (value === undefined) {
                         await dmChannel.send({
-                            embeds: [infoEmbed('Skipped', prompt.skipMessage)],
+                            embeds: [infoEmbed('דלג', prompt.skipMessage)],
                         });
                     } else {
                         await ConfigService.updateSetting(client, guild.id, prompt.key, value, user.id);
                         changes[prompt.key] = value;
                         await dmChannel.send({
-                            embeds: [successEmbed('Saved', formatSavedAck(prompt.key, value, guild))],
+                            embeds: [successEmbed('נשמר', formatSavedAck(prompt.key, value, guild))],
                         });
 
                         try {
@@ -410,7 +410,7 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
                 } catch (error) {
                     errors.push(`• ${prompt.key}: ${error.message}`);
                     await dmChannel.send({
-                        embeds: [buildUserErrorEmbed(ErrorTypes.VALIDATION, `${error.message}\n\nPlease reply again with a valid answer, \`skip\`, or \`cancel\`.`)],
+                        embeds: [buildUserErrorEmbed(ErrorTypes.VALIDATION, `${error.message}\n\nאנא השיבו שוב עם תשובה תקינה, \`skip\`, או \`cancel\`.`)],
                     });
                 }
             }
@@ -429,16 +429,16 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
         }
 
         const summaryTitle = wizardCancelled
-            ? (Object.keys(changes).length > 0 ? 'Setup Stopped' : 'Setup Cancelled')
-            : (errors.length > 0 ? 'Setup Complete' : 'Setup Complete');
+            ? (Object.keys(changes).length > 0 ? 'ההגדרה הופסקה באמצע' : 'ההגדרה בוטלה')
+            : 'ההגדרה הושלמה';
 
         const summaryBody = wizardCancelled
             ? (Object.keys(changes).length > 0
-                ? `Setup stopped early. Saved **${Object.keys(changes).length}** setting(s) before stopping.`
-                : 'Setup wizard stopped before any changes were saved.')
+                ? `אשף ההגדרות נעצר מוקדם מהצפוי. נשמרו **${Object.keys(changes).length}** הגדרות לפני העצירה.`
+                : 'אשף ההגדרות נעצר לפני שנשמרו שינויים כלשהם.')
             : (Object.keys(changes).length > 0
-                ? `Updated **${Object.keys(changes).length}** setting(s).${errors.length > 0 ? ' Some answers needed retries.' : ''}`
-                : 'No changes were applied.');
+                ? `עודכנו בהצלחה **${Object.keys(changes).length}** הגדרות.${errors.length > 0 ? ' חלק מהתשובות דרשו ניסיונות חוזרים.' : ''}`
+                : 'לא בוצעו שינויים בתצורה.');
 
         const summaryEmbed = createEmbed({
             title: wizardCancelled ? `⚠️ ${summaryTitle}` : `✅ ${summaryTitle}`,
@@ -448,7 +448,7 @@ async function runSetupWizard(buttonInteraction, config, guild, client, rootInte
 
         if (errors.length > 0) {
             const uniqueErrors = [...new Set(errors)];
-            summaryEmbed.addFields({ name: 'Issues', value: uniqueErrors.join('\n').slice(0, 1024) });
+            summaryEmbed.addFields({ name: 'שגיאות שהתרחשו', value: uniqueErrors.join('\n').slice(0, 1024) });
         }
 
         await dmChannel.send({ embeds: [summaryEmbed] });
@@ -470,19 +470,19 @@ async function showSettingModal(selectInteraction, guildId, setting) {
     if (setting === 'logChannelId') {
         const modal = new ModalBuilder()
             .setCustomId(modalCustomId)
-            .setTitle('📋 Update Log Channel');
+            .setTitle('📋 עדכון ערוץ לוגים');
 
         const channelSelect = new ChannelSelectMenuBuilder()
             .setCustomId('log_channel')
-            .setPlaceholder('Select a text channel...')
+            .setPlaceholder('בחרו ערוץ טקסט...')
             .setMinValues(1)
             .setMaxValues(1)
             .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
             .setRequired(true);
 
         const channelLabel = new LabelBuilder()
-            .setLabel('Log Channel')
-            .setDescription('Channel where system log messages will be sent')
+            .setLabel('ערוץ לוגים')
+            .setDescription('הערוץ אליו יישלחו לוגים ועדכוני מערכת של הבוט')
             .setChannelSelectMenuComponent(channelSelect);
 
         modal.addLabelComponents(channelLabel);
@@ -493,18 +493,18 @@ async function showSettingModal(selectInteraction, guildId, setting) {
     if (setting === 'modRole') {
         const modal = new ModalBuilder()
             .setCustomId(modalCustomId)
-            .setTitle('🛡️ Update Moderator Role');
+            .setTitle('🛡️ עדכון תפקיד מנהל');
 
         const roleSelect = new RoleSelectMenuBuilder()
             .setCustomId('mod_role')
-            .setPlaceholder('Select a moderator role...')
+            .setPlaceholder('בחרו תפקיד מנהל...')
             .setMinValues(1)
             .setMaxValues(1)
             .setRequired(true);
 
         const roleLabel = new LabelBuilder()
-            .setLabel('Moderator Role')
-            .setDescription('Role used for moderation commands')
+            .setLabel('תפקיד מנהל')
+            .setDescription('התפקיד המורשה להשתמש בפקודות ניהול ומודרציה')
             .setRoleSelectMenuComponent(roleSelect);
 
         modal.addLabelComponents(roleLabel);
@@ -514,11 +514,11 @@ async function showSettingModal(selectInteraction, guildId, setting) {
 
     const modal = new ModalBuilder()
         .setCustomId(modalCustomId)
-        .setTitle('Update Server Prefix');
+        .setTitle('עדכון קידומת השרת (Prefix)');
 
     const textInput = new TextInputBuilder()
         .setCustomId('value')
-        .setLabel('New prefix (1-10 characters, no spaces)')
+        .setLabel('קידומת חדשה (1-10 תווים, ללא רווחים)')
         .setStyle(TextInputStyle.Short)
         .setRequired(true)
         .setMinLength(1)
@@ -532,7 +532,7 @@ function resolveSettingModalValue(setting, submitted) {
     if (setting === 'logChannelId') {
         const channelId = submitted.fields.getField('log_channel')?.values?.[0];
         if (!channelId) {
-            throw new Error('Please select a log channel.');
+            throw new Error('אנא בחרו ערוץ לוגים.');
         }
         return channelId;
     }
@@ -540,14 +540,14 @@ function resolveSettingModalValue(setting, submitted) {
     if (setting === 'modRole') {
         const roleId = submitted.fields.getField('mod_role')?.values?.[0];
         if (!roleId) {
-            throw new Error('Please select a moderator role.');
+            throw new Error('אנא בחרו תפקיד מנהל.');
         }
         return roleId;
     }
 
     const prefix = submitted.fields.getTextInputValue('value')?.trim();
     if (!prefix || prefix.length < 1 || prefix.length > 10 || /\s/.test(prefix)) {
-        throw new Error('Prefix must be 1-10 characters with no spaces.');
+        throw new Error('הקידומת חייבת להיות באורך של 1 עד 10 תווים וללא רווחים.');
     }
     return prefix;
 }
@@ -555,15 +555,15 @@ function resolveSettingModalValue(setting, submitted) {
 function buildSettingSuccessMessage(setting, value, guild) {
     if (setting === 'logChannelId') {
         const channel = guild.channels.cache.get(value);
-        return `Log channel set to ${channel ?? `<#${value}>`}.`;
+        return `ערוץ הלוגים הוגדר בהצלחה ל-${channel ?? `<#${value}>`}.`;
     }
 
     if (setting === 'modRole') {
         const role = guild.roles.cache.get(value);
-        return `Moderator role set to ${role ?? `<@&${value}>`}.`;
+        return `תפקיד המנהל הוגדר בהצלחה ל-${role ?? `<@&${value}>`}.`;
     }
 
-    return `Server prefix set to \`${value}\`.`;
+    return `קידומת השרת הוגדרה בהצלחה ל-\`${value}\`.`;
 }
 
 async function handleSettingModalSubmit(selectInteraction, rootInteraction, setting, guildId, client) {
@@ -587,7 +587,7 @@ async function handleSettingModalSubmit(selectInteraction, rootInteraction, sett
         await ConfigService.updateSetting(client, guildId, setting, value, submitted.user.id);
 
         await submitted.reply({
-            embeds: [successEmbed('Configuration Updated', buildSettingSuccessMessage(setting, value, submitted.guild))],
+            embeds: [successEmbed('ההגדרות עודכנו', buildSettingSuccessMessage(setting, value, submitted.guild))],
             flags: MessageFlags.Ephemeral,
         });
 
@@ -597,7 +597,7 @@ async function handleSettingModalSubmit(selectInteraction, rootInteraction, sett
         logger.error('Config wizard modal submit error:', error);
         await replyUserError(submitted, {
             type: ErrorTypes.CONFIGURATION,
-            message: error.message || 'Please try again.',
+            message: error.message || 'אנא נסו שוב.',
         }).catch(() => {});
     }
 }
@@ -606,7 +606,7 @@ export default {
     slashOnly: true,
     data: new SlashCommandBuilder()
         .setName('configwizard')
-        .setDescription('Open the server configuration dashboard and setup wizard')
+        .setDescription('פתיחת לוח בקרה ואשף הגדרות של תצורת השרת והבוט')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false),
     category: 'Core',
@@ -621,7 +621,7 @@ export default {
             if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
                 return replyUserError(interaction, {
                     type: ErrorTypes.PERMISSION,
-                    message: 'You need the **Manage Server** permission to use this command.',
+                    message: 'יש צורך בהרשאת **ניהול שרת** כדי להשתמש בפקודה זו.',
                 });
             }
 
@@ -672,7 +672,7 @@ export default {
                     logger.error('Config dashboard interaction error:', error);
                     await replyUserError(componentInteraction, {
                         type: ErrorTypes.UNKNOWN,
-                        message: 'Failed to process your selection. Please try again.',
+                        message: 'עיבוד הבחירה נכשל. אנא נסו שוב.',
                     }).catch(() => {});
                 }
             });
@@ -680,7 +680,7 @@ export default {
             logger.error('Config command error:', error);
             await replyUserError(interaction, {
                 type: ErrorTypes.CONFIGURATION,
-                message: 'Failed to open configuration dashboard. Please try again.',
+                message: 'פתיחת לוח הבקרה של ההגדרות נכשלה. אנא נסו שוב.',
             });
         }
     },
