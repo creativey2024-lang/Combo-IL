@@ -7,13 +7,13 @@ export default {
     slashOnly: true,
     data: new SlashCommandBuilder()
         .setName('economy')
-        .setDescription('Economy management commands')
+        .setDescription('פקודות לניהול מערכת הכלכלה')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false)
         .addSubcommand(subcommand =>
             subcommand
                 .setName('dashboard')
-                .setDescription('Open the economy management dashboard')
+                .setDescription('פתיחת לוח הבקרה (Dashboard) של הכלכלה')
         ),
     category: 'Economy',
 
