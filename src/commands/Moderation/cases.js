@@ -3,30 +3,31 @@ import { createEmbed, successEmbed } from '../../utils/embeds.js';
 import { getModerationCases } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('cases')
-        .setDescription('View moderation cases and audit logs')
+        .setDescription('הצגת מקרי ניהול, ענישה ויומני מעקב (Audit Logs)')
         .setDefaultMemberPermissions(PermissionFlagsBits.ViewAuditLog)
         .setDMPermission(false)
         .addStringOption(option =>
             option.setName('filter')
-                .setDescription('Filter cases by type or user')
+                .setDescription('סינון מקרים לפי סוג')
                 .addChoices(
-                    { name: 'All Cases', value: 'all' },
-                    { name: 'Bans', value: 'Member Banned' },
-                    { name: 'Kicks', value: 'Member Kicked' },
-                    { name: 'Timeouts', value: 'Member Timed Out' },
-                    { name: 'Warnings', value: 'User Warned' }
+                    { name: 'כל המקרים', value: 'all' },
+                    { name: 'הרחקות (Bans)', value: 'Member Banned' },
+                    { name: 'קיקים (Kicks)', value: 'Member Kicked' },
+                    { name: 'השתקות (Timeouts)', value: 'Member Timed Out' },
+                    { name: 'אזהרות (Warnings)', value: 'User Warned' }
                 )
         )
         .addUserOption(option =>
             option.setName('user')
-                .setDescription('Filter cases by specific user')
+                .setDescription('סינון מקרים לפי משתמש ספציפי')
         )
         .addIntegerOption(option =>
             option.setName('limit')
-                .setDescription('Number of cases to show (default: 10)')
+                .setDescription('מספר המקרים להצגה (ברירת מחדל: 10)')
                 .setMinValue(1)
                 .setMaxValue(50)
         ),
@@ -57,8 +58,8 @@ export default {
 
             if (cases.length === 0) {
                 throw new Error(targetUser 
-                    ? `No moderation cases found for ${targetUser.tag}`
-                    : `No ${filterType === 'all' ? '' : filterType} cases found in this server.`
+                    ? `לא נמצאו מקרי ניהול עבור המשתמש ${targetUser.tag}`
+                    : `לא נמצאו מקרים מסוג "${filterType === 'all' ? 'הכל' : filterType}" בשרת זה.`
                 );
             }
 
@@ -72,23 +73,23 @@ export default {
                 const pageCases = cases.slice(startIndex, endIndex);
 
                 const embed = createEmbed({
-                    title: 'Moderation Cases',
-                    description: `Showing moderation cases for **${interaction.guild.name}**\n\n**Page ${page} of ${totalPages}**`
+                    title: 'תיקי ניהול וענישה',
+                    description: `מציג מקרי ניהול עבור השרת **${interaction.guild.name}**\n\n**עמוד ${page} מתוך ${totalPages}**`
                 });
 
                 pageCases.forEach(case_ => {
-                    const date = new Date(case_.createdAt).toLocaleDateString();
-                    const time = new Date(case_.createdAt).toLocaleTimeString();
+                    const date = new Date(case_.createdAt).toLocaleDateString('he-IL');
+                    const time = new Date(case_.createdAt).toLocaleTimeString('he-IL');
                     
                     embed.addFields({
-                        name: `Case #${case_.caseId} - ${case_.action}`,
-                        value: `**Target:** ${case_.target}\n**Moderator:** ${case_.executor}\n**Date:** ${date} at ${time}\n**Reason:** ${case_.reason || 'No reason provided'}`,
+                        name: `מקרה #${case_.caseId} - ${case_.action}`,
+                        value: `**יעד:** ${case_.target}\n**מנהל:** ${case_.executor}\n**תאריך:** ${date} בשעה ${time}\n**סיבה:** ${case_.reason || 'לא צוינה סיבה'}`,
                         inline: false
                     });
                 });
 
                 embed.setFooter({
-                    text: `Total cases: ${cases.length} | Filter: ${filterType}${targetUser ?` | User: ${targetUser.tag}`: ''}`
+                    text: `סך הכל מקרים: ${cases.length} | מסנן: ${filterType}${targetUser ? ` | משתמש: ${targetUser.tag}` : ''}`
                 });
 
                 return embed;
@@ -99,19 +100,19 @@ export default {
                 
                 const prevButton = new ButtonBuilder()
                     .setCustomId('prev_page')
-                    .setLabel('⬅️ Previous')
+                    .setLabel('⬅️ הקודם')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === 1);
 
                 const pageInfoButton = new ButtonBuilder()
                     .setCustomId('page_info')
-                    .setLabel(`Page ${page}/${totalPages}`)
+                    .setLabel(`עמוד ${page}/${totalPages}`)
                     .setStyle(ButtonStyle.Primary)
                     .setDisabled(true);
 
                 const nextButton = new ButtonBuilder()
                     .setCustomId('next_page')
-                    .setLabel('Next ➡️')
+                    .setLabel('הבא ➡️')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === totalPages);
 
@@ -126,7 +127,7 @@ export default {
 
             const collector = message.createMessageComponentCollector({
                 componentType: ComponentType.Button,
-time: 120000
+                time: 120000
             });
 
             collector.on('collect', async (buttonInteraction) => {
@@ -134,7 +135,7 @@ time: 120000
 
                 if (buttonInteraction.user.id !== interaction.user.id) {
                     await buttonInteraction.followUp({
-                        content: 'You cannot use these buttons. Run `/cases` to get your own case view.',
+                        content: 'אינך יכול להשתמש בכפתורים אלו. הרץ את הפקודה `/cases` כדי לקבל תצוגה משלך.',
                         flags: MessageFlags.Ephemeral
                     });
                     return;
@@ -168,7 +169,7 @@ time: 120000
 
         } catch (error) {
             logger.error('Error in cases command:', error);
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'An error occurred while retrieving moderation cases. Please try again later.' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'התרחשה שגיאה בעת שליפת מקרי הניהול. אנא נסה שנית מאוחר יותר.' });
         }
     }
 };
