@@ -5,13 +5,14 @@ import { handleInteractionError } from '../../utils/errorHandler.js';
 import { getColor } from '../../config/bot.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('google')
-        .setDescription('Search Google')
+        .setDescription('חיפוש בגוגל')
         .addStringOption(option => 
             option.setName('query')
-                .setDescription('What would you like to search for?')
+                .setDescription('מה תרצה לחפש?')
                 .setRequired(true)),
     async execute(interaction) {
         try {
@@ -19,11 +20,11 @@ export default {
             const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
             
             const embed = createEmbed({
-                title: 'Google Search',
-                description: `[Search for "${query}"](${searchUrl})`,
+                title: 'חיפוש בגוגל',
+                description: `[לחץ כאן לחיפוש "${query}"](${searchUrl})`,
                 color: 'info'
             })
-            .setFooter({ text: 'Google Search Results' });
+            .setFooter({ text: 'תוצאות חיפוש גוגל' });
 
             await InteractionHelper.safeReply(interaction, { embeds: [embed] });
             
