@@ -8,14 +8,14 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("untimeout")
-        .setDescription("Remove timeout from a user")
+        .setDescription("הסרת השתקה זמנית (Timeout) ממשתמש")
         .addUserOption((option) =>
             option
                 .setName("target")
-                .setDescription("User to untimeout")
+                .setDescription("המשתמש ממנו יש להסיר את ההשתקה")
                 .setRequired(true),
         )
-.setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
     category: "moderation",
 
     async execute(interaction, config, client) {
@@ -37,7 +37,7 @@ export default {
                 throw new TitanBotError(
                     'Missing target user',
                     ErrorTypes.USER_INPUT,
-                    'You must specify a user to untimeout.',
+                    'עליך לציין משתמש כדי להסיר ממנו את ההשתקה.',
                     { subtype: 'invalid_user' },
                 );
             }
@@ -46,7 +46,7 @@ export default {
                 throw new TitanBotError(
                     "Target not found",
                     ErrorTypes.USER_INPUT,
-                    "The target user is not currently in this server."
+                    "המשתמש שצוין אינו נמצא בשרת כרגע."
                 );
             }
 
@@ -59,7 +59,7 @@ export default {
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `🔓 **Removed timeout** from ${targetUser.tag}`,
+                        `🔓 **ההשתקה הוסרה** מ-${targetUser.tag}`,
                     ),
                 ],
             });
