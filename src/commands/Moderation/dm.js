@@ -3,28 +3,28 @@ import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/
 import { logEvent } from '../../utils/moderation.js';
 import { logger } from '../../utils/logger.js';
 import { sanitizeMarkdown } from '../../utils/validation.js';
-
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("dm")
-        .setDescription("Send a direct message to a user (Staff only)")
+        .setDescription("שליחת הודעה פרטית (DM) למשתמש (צוות בלבד)")
         .addUserOption(option =>
             option
                 .setName("user")
-                .setDescription("The user to send a DM to")
+                .setDescription("המשתמש שברצונך לשלוח לו הודעה")
                 .setRequired(true)
         )
         .addStringOption(option =>
             option
                 .setName("message")
-                .setDescription("The message to send")
+                .setDescription("ההודעה שברצונך לשלוח")
                 .setRequired(true)
         )
         .addBooleanOption(option =>
             option
                 .setName("anonymous")
-                .setDescription("Send the message anonymously (default: false)")
+                .setDescription("שליחת ההודעה בצורה אנונימית (ברירת מחדל: false)")
                 .setRequired(false)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
@@ -42,18 +42,18 @@ export default {
             return;
         }
 
-    const targetUser = interaction.options.getUser("user");
+        const targetUser = interaction.options.getUser("user");
         const message = interaction.options.getString("message");
         const anonymous = interaction.options.getBoolean("anonymous") || false;
 
         try {
             
             if (message.length > 2000) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Messages must be under 2000 characters.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'ההודעה אינה יכולה לעלות על 2000 תווים.' });
             }
 
             if (targetUser.bot) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'You cannot send DMs to bot accounts.' });
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'לא ניתן לשלוח הודעות פרטיות לחשבונות בוטים.' });
             }
 
             const sanitized = sanitizeMarkdown(message);
@@ -63,10 +63,10 @@ export default {
             await dmChannel.send({
                 embeds: [
                     successEmbed(
-                        anonymous ? "Message from the Staff Team" : `Message from ${interaction.user.tag}`,
+                        anonymous ? "הודעה מצוות השרת" : `הודעה מאת ${interaction.user.tag}`,
                         sanitized
                     ).setFooter({
-                        text: `You cannot reply to this message. | Logger ID: ${interaction.id}`
+                        text: `אין באפשרותך להשיב להודעה זו. | מזהה לוגר: ${interaction.id}`
                     })
                 ]
             });
@@ -91,19 +91,19 @@ export default {
             return await InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     successEmbed(
-                        "DM Sent",
-                        `Successfully sent a message to ${targetUser.tag}`
+                        "הודעה נשלחה",
+                        `ההודעה נשלחה בהצלחה אל המשתמש ${targetUser.tag}`
                     ),
                 ],
             });
         } catch (error) {
             logger.error('DM command error:', error);
             
-if (error.code === 50007) {
-                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Could not send a DM to ${targetUser.tag}. They may have DMs disabled.' });
+            if (error.code === 50007) {
+                return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `לא ניתן לשלוח הודעה פרטית אל ${targetUser.tag}. ייתכן שהודעות פרטיות חסומות אצלו.` });
             }
             
-            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: 'Failed to send DM: ${error.message}' });
+            return await replyUserError(interaction, { type: ErrorTypes.UNKNOWN, message: `שליחת ההודעה הפרטית נכשלה: ${error.message}` });
         }
     }
 };
