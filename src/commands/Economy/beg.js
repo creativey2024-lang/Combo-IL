@@ -13,7 +13,7 @@ const SUCCESS_CHANCE = 0.7;
 export default {
     data: new SlashCommandBuilder()
         .setName('beg')
-        .setDescription('Beg for a small amount of money'),
+        .setDescription('בקשת נדבות בשביל לקבל סכום כסף קטן'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -28,7 +28,7 @@ export default {
                 throw createError(
                     "Failed to load economy data",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "טעינת נתוני הכלכלה שלך נכשלה. אנא נסה שוב מאוחר יותר.",
                     { userId, guildId }
                 );
             }
@@ -41,12 +41,12 @@ export default {
                 const seconds = Math.floor((remainingTime % 60000) / 1000);
 
                 let timeMessage =
-                    minutes > 0 ? `${minutes} minute(s)` : `${seconds} second(s)`;
+                    minutes > 0 ? `${minutes} דקות` : `${seconds} שניות`;
 
                 throw createError(
                     "Beg cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `You are tired from begging! Try again in **${timeMessage}**.`,
+                    `אתה עייף מדי מלבקש נדבות! תוכל לנסות שוב בעוד **${timeMessage}**.`,
                     { remainingTime, minutes, seconds, cooldownType: 'beg' }
                 );
             }
@@ -63,34 +63,34 @@ export default {
                 newCash += amountWon;
 
                 const successMessages = [
-                    `A kind stranger drops **$${amountWon.toLocaleString()}** into your cup.`,
-                    `You spotted an unattended wallet! You grab **$${amountWon.toLocaleString()}** and run.`,
-                    `Someone took pity on you and gave you **$${amountWon.toLocaleString()}**!`,
-                    `You found **$${amountWon.toLocaleString()}** under a park bench.`,
+                    `זר טוב לב זרק **$${amountWon.toLocaleString()}** לתוך הכוס שלך.`,
+                    `שמת לב לארנק שהושאר ללא השגחה! חטפת **$${amountWon.toLocaleString()}** וברחת.`,
+                    `מישהו ריחם עליך ונתן לך **$${amountWon.toLocaleString()}**!`,
+                    `מצאת **$${amountWon.toLocaleString()}** זרוקים מתחת לספסל בגן הציבורי.`,
                 ];
 
                 replyEmbed = successEmbed(
-                    'Begging Successful',
+                    'הקיבוץ הצליח! 💰',
                     successMessages[
                         Math.floor(Math.random() * successMessages.length)
                     ]
                 );
             } else {
                 const failMessages = [
-                    "The police chased you off. You got nothing.",
-                    "Someone yelled, 'Get a job!' and walked past.",
-                    "A squirrel stole the single coin you had.",
-                    "You tried to beg, but you were too embarrassed and gave up.",
+                    "המשטרה גירשה אותך מהמקום. לא קיבלת כלום.",
+                    "מישהו צעק לעברך 'לך תמצא עבודה!' והמשיך ללכת.",
+                    "סנאי חצוף גנב לך את המטבע היחיד שהיה לך.",
+                    "ניסית לבקש נדבות, אבל התביישת מדי וויתרת על זה.",
                 ];
 
                 replyEmbed = warningEmbed(
-                    'Insufficient Funds',
+                    'הקיבוץ נכשל ❌',
                     failMessages[Math.floor(Math.random() * failMessages.length)]
                 );
             }
 
             userData.wallet = newCash;
-userData.lastBeg = Date.now();
+            userData.lastBeg = Date.now();
 
             await setEconomyData(client, guildId, userId, userData);
 
