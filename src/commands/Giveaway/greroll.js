@@ -14,11 +14,11 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("greroll")
-        .setDescription("Rerolls the winner(s) for an ended giveaway.")
+        .setDescription("בחירת זוכה/זוכים חדשים (הגרלה חוזרת) עבור הגרלה שהסתיימה.")
         .addStringOption((option) =>
             option
                 .setName("messageid")
-                .setDescription("The message ID of the ended giveaway.")
+                .setDescription("מזהה ההודעה (Message ID) של ההגרלה שהסתיימה.")
                 .setRequired(true),
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
@@ -30,7 +30,7 @@ export default {
                 throw new TitanBotError(
                     'Giveaway command used outside guild',
                     ErrorTypes.VALIDATION,
-                    'This command can only be used in a server.',
+                    'ניתן להשתמש בפקודה זו בתוך שרתים בלבד.',
                     { userId: interaction.user.id }
                 );
             }
@@ -39,7 +39,7 @@ export default {
                 throw new TitanBotError(
                     'User lacks ManageGuild permission',
                     ErrorTypes.PERMISSION,
-                    "You need the 'Manage Server' permission to reroll a giveaway.",
+                    "אתה זקוק להרשאת 'ניהול שרת' כדי לבצע הגרלה חוזרת.",
                     { userId: interaction.user.id, guildId: interaction.guildId }
                 );
             }
@@ -52,7 +52,7 @@ export default {
                 throw new TitanBotError(
                     'Invalid message ID format',
                     ErrorTypes.VALIDATION,
-                    'Please provide a valid message ID.',
+                    'אנא ספק מזהה הודעה (Message ID) תקין.',
                     { providedId: messageId }
                 );
             }
@@ -68,7 +68,7 @@ export default {
                 throw new TitanBotError(
                     `Giveaway not found: ${messageId}`,
                     ErrorTypes.VALIDATION,
-                    "No giveaway was found with that message ID in the database.",
+                    "לא נמצאה הגרלה במסד הנתונים התואמת למזהה ההודעה שסופק.",
                     { messageId, guildId: interaction.guildId }
                 );
             }
@@ -77,7 +77,7 @@ export default {
                 throw new TitanBotError(
                     `Giveaway still active: ${messageId}`,
                     ErrorTypes.VALIDATION,
-                    "This giveaway is still active. Please use `/gend` to end it first.",
+                    "הגרלה זו עדיין פעילה. אנא השתמש בפקודה `/gend` כדי לסיים אותה תחילה.",
                     { messageId, status: 'active' }
                 );
             }
@@ -88,7 +88,7 @@ export default {
                 throw new TitanBotError(
                     `Insufficient participants for reroll: ${participants.length} < ${giveaway.winnerCount}`,
                     ErrorTypes.VALIDATION,
-                    "Not enough entries to pick the required number of winners.",
+                    "אין מספיק משתתפים רשומים כדי לבחור את כמות הזוכים הנדרשת.",
                     { participantsCount: participants.length, winnersNeeded: giveaway.winnerCount }
                 );
             }
@@ -125,8 +125,8 @@ export default {
                 return InteractionHelper.safeReply(interaction, {
                     embeds: [
                         successEmbed(
-                            "Reroll Complete",
-                            "The new winners have been selected and saved to the database. Could not find channel to announce.",
+                            "ההגרלה החוזרת הושלמה",
+                            "הזוכים החדשים נבחרו ונשמרו במסד הנתונים. לא ניתן היה למצוא את הערוץ כדי להכריז על כך.",
                         ),
                     ],
                     flags: MessageFlags.Ephemeral,
@@ -150,18 +150,18 @@ export default {
 
                 const winnerMentions = newWinners
                     .map((id) => `<@${id}>`)
-                    .join(",");
+                    .join(", ");
 
                 const existingPingMsg = giveaway.winnerPingMessageId
                     ? await channel.messages.fetch(giveaway.winnerPingMessageId).catch(() => null)
                     : null;
                 if (existingPingMsg) {
                     await existingPingMsg.edit({
-                        content: `🔄 **GIVEAWAY REROLL** 🔄 New winners for **${giveaway.prize}**: ${winnerMentions}!`,
+                        content: `🔄 **הגרלה חוזרת** 🔄 זוכים חדשים עבור **${giveaway.prize}**: ${winnerMentions}!`,
                     });
                 } else {
                     const newPingMsg = await channel.send({
-                        content: `🔄 **GIVEAWAY REROLL** 🔄 New winners for **${giveaway.prize}**: ${winnerMentions}!`,
+                        content: `🔄 **הגרלה חוזרת** 🔄 זוכים חדשים עבור **${giveaway.prize}**: ${winnerMentions}!`,
                     });
                     updatedGiveaway.winnerPingMessageId = newPingMsg.id;
                 }
@@ -203,8 +203,8 @@ export default {
                 return InteractionHelper.safeReply(interaction, {
                     embeds: [
                         successEmbed(
-                            "Reroll Complete",
-                            `The new winners have been announced in ${channel}. (Original message not found).`,
+                            "ההגרלה החוזרת הושלמה",
+                            `הזוכים החדשים הוכרזו בערוץ ${channel}. (ההודעה המקורית לא נמצאה).`,
                         ),
                     ],
                     flags: MessageFlags.Ephemeral,
@@ -221,25 +221,25 @@ export default {
             const newRow = createGiveawayButtons(true);
 
             await message.edit({
-                content: "🔄 **GIVEAWAY REROLLED** 🔄",
+                content: "🔄 **בוצעה הגרלה חוזרת** 🔄",
                 embeds: [newEmbed],
                 components: [newRow],
             });
 
             const winnerMentions = newWinners
                 .map((id) => `<@${id}>`)
-                .join(",");
+                .join(", ");
 
             const existingPingMsg = giveaway.winnerPingMessageId
                 ? await channel.messages.fetch(giveaway.winnerPingMessageId).catch(() => null)
                 : null;
             if (existingPingMsg) {
                 await existingPingMsg.edit({
-                    content: `🔄 **REROLL WINNERS** 🔄 CONGRATULATIONS ${winnerMentions}! You are the new winner(s) for the **${giveaway.prize}** giveaway! Please contact the host <@${giveaway.hostId}> to claim your prize.`,
+                    content: `🔄 **זוכים בהגרלה החוזרת** 🔄 מזל טוב ${winnerMentions}! אתם הזוכים החדשים בהגרלה על **${giveaway.prize}**! אנא צרו קשר עם יוצר ההגרלה <@${giveaway.hostId}> כדי לקבל את הפרס שלכם.`,
                 });
             } else {
                 const newPingMsg = await channel.send({
-                    content: `🔄 **REROLL WINNERS** 🔄 CONGRATULATIONS ${winnerMentions}! You are the new winner(s) for the **${giveaway.prize}** giveaway! Please contact the host <@${giveaway.hostId}> to claim your prize.`,
+                    content: `🔄 **זוכים בהגרלה החוזרת** 🔄 מזל טוב ${winnerMentions}! אתם הזוכים החדשים בהגרלה על **${giveaway.prize}**! אנא צרו קשר עם יוצר ההגרלה <@${giveaway.hostId}> כדי לקבל את הפרס שלכם.`,
                 });
                 updatedGiveaway.winnerPingMessageId = newPingMsg.id;
             }
@@ -281,8 +281,8 @@ export default {
             return InteractionHelper.safeReply(interaction, {
                 embeds: [
                     successEmbed(
-                        "Reroll Successful ✅",
-                        `Successfully rerolled the giveaway for **${giveaway.prize}** in ${channel}. Selected ${newWinners.length} new winner(s).`,
+                        "הגרלה חוזרת בוצעה בהצלחה ✅",
+                        `בוצעה הגרלה חוזרת בהצלחה עבור **${giveaway.prize}** בערוץ ${channel}. נבחרו ${newWinners.length} זוכה/זוכים חדשים.`,
                     ),
                 ],
                 flags: MessageFlags.Ephemeral,
