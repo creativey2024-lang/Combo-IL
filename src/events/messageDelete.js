@@ -26,11 +26,12 @@ export default {
               guildId: message.guild.id,
               eventType: EVENT_TYPES.REACTION_ROLE_DELETE,
               data: {
-                title: 'Reaction Role Removed',
+                // תרגום כותרות הלוגים של מערכת הרולים
+                title: '🗑️ רול תגובה (Reaction Role) הוסר',
                 lines: [
-                  formatLogLine('Channel', message.channel ? `${message.channel.name} ${message.channel.toString()}` : 'Unknown'),
-                  formatLogLine('Message ID', `\`${message.id}\``),
-                  formatLogLine('Cleanup', 'Database entry removed automatically'),
+                  formatLogLine('ערוץ', message.channel ? `${message.channel.name} ${message.channel.toString()}` : 'לא ידוע'),
+                  formatLogLine('איידי הודעה', `\`${message.id}\``),
+                  formatLogLine('ניקוי מערכת', 'הנתונים נמחקו מבסיס הנתונים אוטומטית'),
                 ],
                 quoted: true,
               }
@@ -45,11 +46,12 @@ export default {
 
       if (message.author?.bot) return;
 
+      // תרגום שורות המידע בלוג מחיקת הודעה רגילה
       const metaLines = [
-        formatLogLine('Channel', message.channel ? `${message.channel.name} ${message.channel.toString()}` : 'Unknown'),
-        formatLogLine('Message ID', `\`${message.id}\``),
-        formatLogLine('Message author', message.author ? message.author.toString() : 'Unknown'),
-        formatLogLine('Message created', `<t:${Math.floor(message.createdTimestamp / 1000)}:R>`),
+        formatLogLine('ערוץ', message.channel ? `${message.channel.name} ${message.channel.toString()}` : 'לא ידוע'),
+        formatLogLine('איידי הודעה', `\`${message.id}\``),
+        formatLogLine('כותב ההודעה', message.author ? message.author.toString() : 'לא ידוע'),
+        formatLogLine('זמן יצירת ההודעה', `<t:${Math.floor(message.createdTimestamp / 1000)}:R>`),
       ];
 
       let messageBody = null;
@@ -60,7 +62,7 @@ export default {
       }
 
       if (message.attachments.size > 0) {
-        metaLines.push(formatLogLine('Attachments', String(message.attachments.size)));
+        formatLogLine('קבצים מצורפים', String(message.attachments.size));
       }
 
       await logEvent({
@@ -68,10 +70,11 @@ export default {
         guildId: message.guild.id,
         eventType: EVENT_TYPES.MESSAGE_DELETE,
         data: {
-          title: 'Message deleted',
+          // תרגום כותרת הלוג הראשי
+          title: '🗑️ הודעה נמחקה',
           lines: metaLines,
           quoted: true,
-          section: messageBody ? { title: 'Message', body: messageBody || '*(empty message)*' } : null,
+          section: messageBody ? { title: 'תוכן ההודעה ונמחק על ידי Combo IL bot', body: messageBody || '*(הודעה ריקה)*' } : null,
           userId: message.author?.id,
           channelId: message.channel.id,
         }
