@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
+import { createEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
 import { getEconomyData, setEconomyData } from '../../utils/economy.js';
 import { getGuildConfig } from '../../services/guildConfig.js';
 import { formatDuration } from '../../utils/embeds.js';
@@ -14,7 +14,7 @@ const PREMIUM_BONUS_PERCENTAGE = 0.1;
 export default {
     data: new SlashCommandBuilder()
         .setName('daily')
-        .setDescription('Claim your daily cash reward'),
+        .setDescription('קבלת מענק המזומן היומי שלך'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -32,7 +32,7 @@ export default {
                 throw createError(
                     "Failed to load economy data for daily",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "טעינת נתוני הכלכלה שלך נכשלה. אנא נסה שוב מאוחר יותר.",
                     { userId, guildId }
                 );
             }
@@ -44,7 +44,7 @@ export default {
                 throw createError(
                     "Daily cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `You need to wait before claiming daily again. Try again in **${formatDuration(timeRemaining)}**.`,
+                    `עליך להמתין לפני שתוכל לאסוף את המענק היומי שוב. נסה שוב בעוד **${formatDuration(timeRemaining)}**.`,
                     { timeRemaining, cooldownType: 'daily' }
                 );
             }
@@ -65,7 +65,7 @@ export default {
                     DAILY_AMOUNT * PREMIUM_BONUS_PERCENTAGE,
                 );
                 earned += bonusAmount;
-                bonusMessage = `\n✨ **Premium Bonus:** +$${bonusAmount.toLocaleString()}`;
+                bonusMessage = `\n✨ **בונוס פרימיום:** +$${bonusAmount.toLocaleString()}`;
                 hasPremiumRole = true;
             }
 
@@ -84,18 +84,18 @@ export default {
             });
 
             const embed = successEmbed(
-                "✅ Daily Claimed!",
-                `You have claimed your daily **$${earned.toLocaleString()}**!${bonusMessage}`
+                "✅ המענק היומי נאסף!",
+                `אספת בהצלחה את המענק היומי שלך על סך **$${earned.toLocaleString()}**!${bonusMessage}`
             )
                 .addFields({
-                    name: "New Cash Balance",
+                    name: "יתרה חדשה בארנק",
                     value: `$${userData.wallet.toLocaleString()}`,
                     inline: true,
                 })
                 .setFooter({
                     text: hasPremiumRole
-                        ? `Next claim in 24 hours. (Premium Active)`
-                        : `Next claim in 24 hours.`,
+                        ? `המענק הבא יהיה זמין בעוד 24 שעות. (פרימיום פעיל)`
+                        : `המענק הבא יהיה זמין בעוד 24 שעות.`,
                 });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
